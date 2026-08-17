@@ -1,0 +1,100 @@
+# Conversion forecast model — capability 018 (Demo Success Forecast Agent).
+#
+# A regularised logistic model expressed as data. It is deliberately NOT a
+# trained artefact loaded from a pickle: this is a cold-start model whose
+# coefficients were set by hand from the funnel definitions, so every weight is
+# reviewable and its sign is meaningful. When enough labelled demos exist,
+# scripts/fit_forecast.py refits these same coefficients and emits forecast.v2
+# — the scoring code does not change.
+#
+# NO LLM COMPUTES THIS SCORE. See docs/architecture/system-overview.md §19.
+policy_id: forecast
+version: v1
+description: >
+  Interpretable logistic conversion model over deterministic, non-sensitive
+  demo features. Features are all standardised to roughly [-1, 1] by the
+  feature builder in capabilities/forecasting/features.py.
+
+# Base log-odds. -0.85 is roughly a 30% prior conversion rate for a completed
+# demo with entirely neutral features.
+intercept: -0.85
+
+features:
+  - name: tutor_historical_conversion
+    weight: 1.40
+    default: 0.0
+    description: >
+      Tutor's demo-to-paid rate, centred on the platform mean. The strongest
+      single signal and the one with the most data behind it.
+
+  - name: tutor_no_show_rate
+    weight: -0.90
+    default: 0.0
+    description: Tutor no-show rate, centred. Negative by definition.
+
+  - name: student_response_latency
+    weight: -0.70
+    default: 0.0
+    description: >
+      Median minutes to reply, log-scaled and centred. A parent who answers in
+      two minutes is in a different funnel from one who answers in two days.
+
+  - name: scheduling_friction
+    weight: -0.55
+    default: 0.0
+    description: Turns spent negotiating a slot, relative to the median.
+
+  - name: reschedule_count
+    weight: -0.65
+    default: 0.0
+    description: Reschedules before the demo occurred. Scaled by /3, capped at 1.
+
+  - name: lead_to_demo_days
+    weight: -0.35
+    default: 0.0
+    description: Days between lead qualification and the demo, log-scaled.
+
+  - name: prior_qualification_score
+    weight: 0.80
+    default: 0.0
+    description: Lead Intake's qualification signal when a handoff supplied one.
+
+  - name: demo_outcome_positive
+    weight: 1.60
+    default: 0.0
+    description: >
+      1 when the recorded outcome was positive, -1 negative, 0 unknown. Only
+      available post-demo; pre-demo forecasts carry the default and a lower
+      confidence.
+
+  - name: objection_price_only
+    weight: 0.25
+    default: 0.0
+    description: >
+      A price-only objection set. Mildly positive: it means intent exists and
+      the blocker is addressable, unlike a tutor-fit objection.
+
+  - name: objection_severity
+    weight: -0.75
+    default: 0.0
+    description: Count of distinct unresolved objection categories, scaled by /4.
+
+  - name: followup_engagement
+    weight: 0.85
+    default: 0.0
+    description: Replied to post-demo follow-up within the policy window.
+
+  - name: mode_online
+    weight: 0.10
+    default: 0.0
+    description: Online rather than home mode. Small; included for regional fairness checks.
+
+# Segment sample floor. Below this the score is still produced, but with
+# confidence=low, and the orchestrator will not use it to gate an action.
+min_sample_size: 30
+
+high_risk_threshold: 0.7
+low_risk_threshold: 0.3
+
+calibration_alert_delta: 0.12
+drift_alert_delta: 0.2

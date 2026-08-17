@@ -1,0 +1,66 @@
+# Discount policy — capability 034 (Discount Suggestion Agent).
+#
+# THE MODEL NEVER SEES THIS FILE AND NEVER PROPOSES AN AMOUNT. The engine in
+# capabilities/discounts computes an offer from these bands and the
+# authoritative list price returned by the NXTutors gateway; the model is only
+# allowed to word an offer that has already been approved.
+#
+# Every band's ceiling is validated against absolute_max_percent at load time.
+policy_id: discount
+version: v1
+description: >
+  Approved discount bands, auto-approval ceiling, margin floor and abuse
+  controls for post-demo conversion.
+
+bands:
+  - name: none
+    min_percent: 0
+    max_percent: 0
+    triggers: []
+    conditions:
+      - No price objection was detected; there is nothing to discount for.
+
+  - name: goodwill
+    min_percent: 5
+    max_percent: 5
+    triggers:
+      - timing_concern
+      - trust_concern
+    conditions:
+      - Demo completed with a positive or neutral outcome.
+      - Offer is valid for the policy validity window only.
+
+  - name: price_sensitive
+    min_percent: 8
+    max_percent: 10
+    triggers:
+      - price_concern
+    conditions:
+      - An explicit price objection was recorded with evidence.
+      - Customer has no prior discount inside the lookback window.
+
+  - name: retention_recovery
+    min_percent: 12
+    max_percent: 15
+    triggers:
+      - price_concern
+      - competitor_mention
+    conditions:
+      - Explicit price objection AND a named alternative provider.
+      - Requires human approval; above max_auto_approve_percent.
+
+# Anything above this needs a human. Set below the top band on purpose: the two
+# bands that can reach 15% are exactly the cases worth a person looking at.
+max_auto_approve_percent: 10
+absolute_max_percent: 25
+
+# No combination may take the payable amount below this share of the
+# authoritative list price. Margin protection that does not require this
+# service to know the cost base.
+price_floor_percent_of_list: 70
+
+validity_hours: 48
+
+max_offers_per_customer_per_days: 2
+lookback_days: 90
+escalate_after_repeat_requests: 2

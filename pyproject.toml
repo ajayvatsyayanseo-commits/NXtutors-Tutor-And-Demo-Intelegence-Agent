@@ -1,0 +1,147 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tutor-match-meta"
+version = "0.1.0"
+description = "NXTutors TutorMatch Meta Agent — one orchestrator, eight bounded matching skills"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+dependencies = [
+  "alembic==1.14.0",
+  "asyncpg==0.30.0",
+  "boto3==1.35.90",
+  "fastapi==0.141.1",
+  "starlette==1.3.1",
+  "httpx==0.28.1",
+  "mangum==0.19.0",
+  "openai==1.59.3",
+  "pgvector==0.3.6",
+  "pydantic==2.10.4",
+  "pydantic-settings==2.7.0",
+  "python-dateutil==2.9.0.post0",
+  "pyyaml==6.0.2",
+  "sqlalchemy==2.0.36",
+  "structlog==24.4.0",
+  "tzdata==2025.2",
+  "uvicorn[standard]==0.34.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "aiosqlite==0.20.0",
+  "bandit==1.8.0",
+  "hypothesis==6.122.3",
+  "mypy==1.14.1",
+  "pip-audit==2.7.3",
+  "pytest==9.0.3",
+  "pytest-asyncio==1.3.0",
+  "pytest-cov==6.0.0",
+  "ruff==0.9.1",
+  "types-pyyaml==6.0.12.20241230",
+  "types-python-dateutil==2.9.0.20241206",
+]
+
+[project.scripts]
+tutor-match-doctor = "tutor_match_meta.cli.doctor:main"
+tutor-match-e2e = "tutor_match_meta.cli.local_e2e:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tutor_match_meta"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "T20", "RUF"]
+ignore = ["S101", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# conftest.py neutralises the environment before importing anything that
+# reads settings, so its imports are deliberately below that block.
+"tests/conftest.py" = ["E402"]
+"tests/**" = ["S105", "S106", "S311"]
+# The integration suite builds its own throwaway schema name; `schema` is a
+# fixture-generated token, never user input. Asserted by
+# tests/security/test_sql_injection.py, which only scans src/.
+"tests/integration/**" = ["S608"]
+"src/tutor_match_meta/api/**" = ["B008"]
+"src/tutor_match_meta/cli/**" = ["T20"]
+# Load profiles are operator tooling, run by hand against a deployed stack.
+# They import locust, which is deliberately not a project dependency.
+"tests/load/**" = ["T20", "S311", "S105"]
+"scripts/**" = ["T20", "S101"]
+# The only f-string interpolation in these queries is a fixed COLLATE constant
+# and the REGISTER_COLUMNS allowlist defined in the module. Every runtime value
+# is bound with %s. Verified by tests/security/test_sql_injection.py.
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+exclude = ["migrations", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["pgvector.*", "mangum.*", "boto3.*", "botocore.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers -ra"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+  "integration: requires a disposable PostgreSQL",
+  "contract: pins a versioned external contract",
+  "security: exercises a security or anti-fabrication invariant",
+  "load: throughput / concurrency behaviour",
+]
+
+[tool.bandit]
+# Tests assert on hostile strings by design; scanning them reports the test
+# fixtures, not the service. `src` is what ships.
+exclude_dirs = ["tests", "migrations", ".venv"]
+# B608 (string-built SQL): every occurrence interpolates a module constant or a
+# table name fixed at construction from configuration, and every runtime value
+# is a bound parameter. Proven structurally, per file, by
+# tests/security/test_sql_injection.py — which walks the AST rather than
+# trusting this comment.
+# B108 (/tmp): the memory WAL. /tmp is the only writable path in Lambda and the
+# directory is per-container, so there is no shared-tmp race to exploit.
+skips = ["B608", "B108"]
+
+[tool.coverage.run]
+branch = true
+source = ["tutor_match_meta"]
+# Modules that cannot be exercised without infrastructure this suite refuses
+# to touch. Omitting is NOT the same as testing: each line names what would be
+# needed, and docs/release-gate-report.md records them as NOT EXECUTED rather
+# than folding them into the coverage number as if they had passed.
+#
+# Two entries here were previously stale paths that matched nothing
+# (`integrations/openai/...`, `integrations/whatsapp/meta_cloud.py`), so the
+# real modules were being counted as untested code all along.
+omit = [
+  "*/cli/*",                                  # operator tooling; run by `make doctor`
+  "*/handlers/lambda_entry.py",               # AWS event shapes; covered by the services
+  "*/integrations/llm/openai_provider.py",    # needs a real provider account
+  "*/repositories/postgres.py",               # needs PostgreSQL; see tests/integration/
+  "*/cache/postgres_store.py",                # needs PostgreSQL; see tests/integration/
+  "*/sync/projection.py",                     # needs the website feed + PostgreSQL
+  "*/sync/retention.py",                      # needs PostgreSQL
+  "*/integrations/website/gateway.py",        # needs the Laravel API
+  "*/integrations/chitragupta/client.py",     # needs Chitragupta
+  "*/jobs.py",                                # thin dispatch to the above
+  "*/api/app.py",                             # app construction; exercised via TestClient
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

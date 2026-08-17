@@ -1,0 +1,22 @@
+# Hybrid: some sessions at home, some online. Proximity still matters, but less
+# than for pure home tuition since not every session requires travel.
+extends: _base
+policy_id: hybrid_tuition
+version: "1"
+description: >
+  Mixed home and online delivery. Proximity is weighted between the home and
+  online policies, and the tutor must credibly support both modes.
+
+weights:
+  academic: 0.22
+  subject_expertise: 0.20
+  availability: 0.19
+  proximity: 0.13
+  performance: 0.13
+  negotiation: 0.06
+  personality: 0.05
+  replacement_risk: 0.02
+
+proximity:
+  max_useful_distance_km: 18.0
+  max_travel_minutes: 50

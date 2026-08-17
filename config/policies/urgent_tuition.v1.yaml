@@ -1,0 +1,43 @@
+# Emergency / urgent start. The parent needs someone this week.
+extends: _base
+policy_id: urgent_tuition
+version: "1"
+description: >
+  Urgent start, typically within days. Availability dominates because a perfect
+  tutor who can only start next month does not solve this parent's problem.
+  The score bar is lowered slightly and the pool widened, but the hard filters
+  are unchanged — urgency never buys a subject or board mismatch.
+
+weights:
+  academic: 0.20
+  subject_expertise: 0.18
+  availability: 0.30
+  proximity: 0.14
+  performance: 0.09
+  negotiation: 0.05
+  personality: 0.02
+  replacement_risk: 0.02
+
+thresholds:
+  # Deliberately lower: a good-enough tutor available on Thursday beats a
+  # marginally better one available in three weeks.
+  min_final_score: 0.40
+  candidate_pool_limit: 160
+  min_weight_coverage: 0.40
+
+diversity:
+  # Speed over variety when the parent needs someone now.
+  enabled: false
+  max_same_locality: 3
+  max_score_sacrifice: 0.0
+
+explanation:
+  max_reasons_per_tutor: 2
+  citable_dimensions:
+    - availability
+    - academic
+    - subject_expertise
+    - proximity
+    - performance
+    - personality
+    - negotiation

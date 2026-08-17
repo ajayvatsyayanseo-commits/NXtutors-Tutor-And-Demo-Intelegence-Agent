@@ -1,0 +1,46 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        options: [dev, staging, production]
+      target_sha:
+        description: Commit SHA of the artifact to restore
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Code only. Migrations are additive, so the previous code runs against
+      # the current schema — rolling the schema back is a separate, manual,
+      # human-approved decision (docs/runbooks/rollback.md).
+      - name: Restore previous artifact
+        run: |
+          for fn in ingress internal-api match-worker outbound-worker scheduled; do
+            aws lambda update-function-code \
+              --function-name "tutor-match-meta-${{ inputs.environment }}-$fn" \
+              --s3-bucket "${{ vars.ARTIFACT_BUCKET }}" \
+              --s3-key "tutor-match-meta/${{ inputs.target_sha }}.zip" \
+              --publish
+          done
+
+      - name: Smoke test
+        run: uv run python scripts/smoke_test.py --environment "${{ inputs.environment }}"

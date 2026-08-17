@@ -1,0 +1,87 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, staging, production]
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.meta.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync --frozen
+
+      # Immutable artifact keyed by the commit SHA, so a rollback is a redeploy
+      # of a known-good object rather than a rebuild that may not reproduce.
+      - name: Build Lambda bundle
+        run: |
+          uv export --frozen --no-dev --no-emit-project -o requirements.txt
+          uv pip install --target build/python -r requirements.txt
+          cp -r src/tutor_match_meta build/python/
+          cp -r config build/python/config
+          cd build/python && zip -qr "../tutor-match-meta-${GITHUB_SHA}.zip" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-${{ github.sha }}
+          path: build/tutor-match-meta-${{ github.sha }}.zip
+          retention-days: 90
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: bundle-${{ github.sha }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload artifact
+        run: |
+          aws s3 cp "tutor-match-meta-${GITHUB_SHA}.zip" \
+            "s3://${{ vars.ARTIFACT_BUCKET }}/tutor-match-meta/${GITHUB_SHA}.zip"
+
+      # Additive-only by policy. A destructive migration never runs
+      # automatically — see docs/runbooks/migrations.md.
+      - name: Migration safety gate
+        run: uv run python scripts/check_migration_safety.py
+
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - name: Terraform apply
+        run: |
+          terraform -chdir=infra/terraform init \
+            -backend-config="key=${{ inputs.environment }}/terraform.tfstate"
+          terraform -chdir=infra/terraform apply -auto-approve \
+            -var="environment=${{ inputs.environment }}" \
+            -var="artifact_key=tutor-match-meta/${GITHUB_SHA}.zip"
+
+      - name: Smoke test
+        run: uv run python scripts/smoke_test.py --environment "${{ inputs.environment }}"

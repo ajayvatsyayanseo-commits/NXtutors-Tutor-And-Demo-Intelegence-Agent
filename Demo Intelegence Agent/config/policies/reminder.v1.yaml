@@ -1,0 +1,41 @@
+# Reminder policy — capability 026 (Demo Reminder Agent).
+#
+# Template names below are the ones already approved in the NXTutors WhatsApp
+# Business account. A reminder whose template is not approved cannot be sent
+# outside Meta's session window, so changing a name here without creating and
+# approving the template first silently disables that reminder.
+policy_id: reminder
+version: v1
+description: >
+  Reminder ladder, quiet hours, throttles and silence escalation for the
+  Demo Command Center. Values are business policy, not engineering constants.
+
+offsets:
+  - label: t24h
+    minutes_before: 1440
+    audience: both
+    template: demo_reminder_t24h
+    channel: whatsapp
+  - label: t2h
+    minutes_before: 120
+    audience: both
+    template: demo_reminder_t2h
+    channel: whatsapp
+  - label: t15m
+    minutes_before: 15
+    audience: both
+    template: demo_reminder_t15m
+    channel: whatsapp
+
+# Across the whole demo, including every reschedule. A parent who reschedules
+# three times must not receive three complete ladders.
+max_reminders_per_demo: 6
+max_reminders_per_identity_per_day: 8
+
+# Local time in the demo's timezone, not UTC.
+quiet_hours_start: 21
+quiet_hours_end: 8
+quiet_hours_defer_to_hour: 8
+
+silence_escalation_minutes: 120
+no_show_risk_escalation_threshold: 0.7

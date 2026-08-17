@@ -1,0 +1,118 @@
+# Base scoring policy. Every other policy extends this and overrides only what
+# differs, so the seven variants cannot silently drift apart.
+#
+# Weights MUST sum to exactly 1.0 — enforced on load. Changing a weight is a
+# reviewable data change, and the checksum of the resolved document is stamped
+# onto every match decision.
+#
+# Leading underscore: not selectable at runtime, only inheritable.
+
+policy_id: base
+version: "1"
+description: >
+  Balanced default. Academic fit and subject expertise dominate because a tutor
+  who cannot teach the syllabus is useless regardless of how close or cheap they
+  are. Replacement risk carries almost no weight today because the website holds
+  no churn data to ground it (docs/assumptions.md A10).
+
+weights:
+  academic: 0.22
+  subject_expertise: 0.20
+  availability: 0.16
+  proximity: 0.14
+  performance: 0.13
+  negotiation: 0.08
+  personality: 0.05
+  replacement_risk: 0.02
+
+thresholds:
+  # Below this a candidate is never shortlisted, even if that leaves the
+  # shortlist short or empty. One good match beats three misleading ones.
+  min_final_score: 0.45
+  shortlist_size: 3
+  candidate_pool_limit: 120
+  # If the dimensions that actually had data account for less than this share of
+  # total weight, the result is flagged for human review rather than presented
+  # with false confidence.
+  min_weight_coverage: 0.45
+  min_dimension_confidence: 0.10
+  # Score given to a dimension with no evidence at all. Deliberately mid-scale:
+  # penalising a tutor for data the website never collected would bury tutors
+  # whose profiles are merely incomplete.
+  neutral_score: 0.50
+
+reviews:
+  # A tutor with no reviews is assumed average, not bad.
+  prior_mean: 3.8
+  # Five imaginary average reviews. A lone 5-star lands near 4.4, not above a
+  # forty-review 4.8.
+  prior_weight: 5.0
+  min_reviews_for_rating: 3
+  full_confidence_at: 20
+  recency_half_life_days: 540
+
+proximity:
+  # Policy defaults, not tutor-declared facts — the schema has no radius column.
+  default_travel_radius_km:
+    metro: 8.0
+    tier2: 12.0
+    default: 15.0
+  max_useful_distance_km: 20.0
+  # Awarded when we only know city/pincode equality and have no coordinates.
+  # Mid-scale on purpose: it is a real signal, but a weak one.
+  coarse_match_score: 0.55
+  max_travel_minutes: 60
+
+negotiation:
+  # A tutor whose floor is more than 30% above the parent's ceiling is filtered
+  # out: no approved strategy closes that gap.
+  max_over_budget_ratio: 1.30
+  within_budget_score: 1.0
+  overload_active_students: 12
+  # The closed set of approved moves. Nothing outside this list may be
+  # suggested, and nothing here is derived from inferred willingness to pay.
+  strategies:
+    - code: within_budget
+      applies_up_to_ratio: 1.0
+      description: Tutor's stated fee already fits the parent's budget.
+      requires_approval: false
+    - code: standard_package_discount
+      applies_up_to_ratio: 1.10
+      description: >
+        Offer the published multi-session package rate, which brings the
+        effective fee inside the parent's budget.
+      requires_approval: false
+    - code: reduced_frequency
+      applies_up_to_ratio: 1.20
+      description: >
+        Propose fewer sessions per week at the tutor's standard rate so the
+        monthly outlay fits.
+      requires_approval: false
+    - code: coordinator_review
+      applies_up_to_ratio: 1.30
+      description: >
+        Gap needs a human coordinator to approve an exception against the
+        tutor's minimum fee.
+      requires_approval: true
+
+diversity:
+  enabled: true
+  max_same_locality: 2
+  # A more diverse candidate may only displace a better one when it is within
+  # this much of it. Quality is never traded for variety.
+  max_score_sacrifice: 0.05
+
+explanation:
+  expose_numeric_scores: false
+  expose_replacement_risk: false
+  max_reasons_per_tutor: 3
+  # Preference order for what to tell a parent. Availability and academic fit
+  # first because those are what a parent actually decides on.
+  citable_dimensions:
+    - academic
+    - subject_expertise
+    - availability
+    - proximity
+    - performance
+    - personality
+    - negotiation

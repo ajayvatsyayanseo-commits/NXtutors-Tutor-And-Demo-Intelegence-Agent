@@ -1,0 +1,26 @@
+# Online tuition. Distance is irrelevant, so its weight goes to the things that
+# actually differentiate an online tutor: communication and scheduling overlap.
+extends: _base
+policy_id: online_tuition
+version: "1"
+description: >
+  Fully remote tuition. Proximity carries near-zero weight; communication
+  quality and timezone-correct availability carry more, because a screen removes
+  every non-verbal channel a home tutor has.
+
+weights:
+  academic: 0.24
+  subject_expertise: 0.22
+  availability: 0.22
+  proximity: 0.01
+  performance: 0.14
+  negotiation: 0.08
+  personality: 0.07
+  replacement_risk: 0.02
+
+proximity:
+  # Retained so an online tutor in the same city still gets a small, honest
+  # nudge (easier to convert to hybrid later), without it deciding anything.
+  max_useful_distance_km: 50.0
+  coarse_match_score: 0.60
+  max_travel_minutes: 300

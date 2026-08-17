@@ -1,0 +1,45 @@
+# Board examination year (Class 10 / 12). Board-specific syllabus and exam
+# pattern knowledge is close to non-negotiable, and demonstrated outcomes matter
+# far more than they do for routine support.
+extends: _base
+policy_id: board_exam_prep
+version: "1"
+description: >
+  Class 10/12 board preparation. Academic and subject fit dominate because a
+  tutor teaching the wrong board's paper pattern actively harms the student in
+  an exam year. Evidence of past results is weighted up; proximity down, since
+  parents will travel for the right exam tutor.
+
+weights:
+  academic: 0.28
+  subject_expertise: 0.24
+  availability: 0.15
+  proximity: 0.09
+  performance: 0.17
+  negotiation: 0.03
+  personality: 0.02
+  replacement_risk: 0.02
+
+thresholds:
+  # Higher bar: a mediocre match in an exam year is a real cost to the student.
+  min_final_score: 0.55
+  min_weight_coverage: 0.55
+
+reviews:
+  # Outcomes matter more here, so demand a larger sample before citing a rating.
+  min_reviews_for_rating: 4
+  full_confidence_at: 25
+  # Board patterns change; a five-year-old review says little about the current
+  # syllabus.
+  recency_half_life_days: 400
+
+explanation:
+  max_reasons_per_tutor: 3
+  citable_dimensions:
+    - academic
+    - subject_expertise
+    - performance
+    - availability
+    - proximity
+    - personality
+    - negotiation

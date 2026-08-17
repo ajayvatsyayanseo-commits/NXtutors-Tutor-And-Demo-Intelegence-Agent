@@ -1,0 +1,118 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demo-command-center-agent"
+version = "0.1.0"
+description = "NXTutors Demo Intelegence Agent — one demo-lifecycle agent, eight bounded capabilities"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+
+# Deliberately small. Every Lambda ships this list, so each entry is a cold-start
+# cost on every invocation. There is no web framework (API Gateway proxy events
+# are dicts and are parsed as dicts), no ORM and no database driver — persistence
+# is the Aurora RDS Data API over boto3, which is already in the runtime.
+dependencies = [
+  "httpx==0.28.1",
+  "openai==1.59.3",
+  "pydantic==2.10.4",
+  "pydantic-settings==2.7.0",
+  "python-dateutil==2.9.0.post0",
+  "pyyaml==6.0.2",
+  "tzdata==2025.2",
+]
+
+[project.optional-dependencies]
+# boto3 is present in the Lambda runtime; pinning it here is for local parity
+# only and it is excluded from the deployment ZIP.
+aws = ["boto3==1.35.90"]
+dev = [
+  "bandit==1.8.0",
+  "boto3==1.35.90",
+  "hypothesis==6.122.3",
+  "mypy==1.14.1",
+  "pip-audit==2.7.3",
+  "pytest==9.0.3",
+  "pytest-asyncio==1.3.0",
+  "pytest-cov==6.0.0",
+  "ruff==0.9.1",
+  "types-pyyaml==6.0.12.20241230",
+  "types-python-dateutil==2.9.0.20241206",
+]
+
+[project.scripts]
+dcc-doctor = "demo_command_center.cli.doctor:main"
+dcc-e2e = "demo_command_center.cli.local_e2e:main"
+dcc-migrate = "demo_command_center.cli.migrate:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_command_center"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "T20", "RUF"]
+ignore = ["S101", "RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S311", "T20"]
+"src/demo_command_center/cli/**" = ["T20"]
+"scripts/**" = ["T20", "S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+exclude = ["tests"]
+
+[[tool.mypy.overrides]]
+module = ["boto3.*", "botocore.*", "dateutil.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers -ra"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+  "contract: pins a versioned external contract",
+  "security: exercises a security or anti-fabrication invariant",
+  "e2e: full-lifecycle flow through the real orchestrator",
+  "load: throughput / concurrency behaviour",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+# B608: the only f-string interpolation in SQL is the schema name fixed at
+# construction from configuration plus module-level column allowlists. Every
+# runtime value is a Data API named parameter. Asserted structurally by
+# tests/security/test_sql_parameterisation.py, which walks the AST.
+skips = ["B608"]
+
+[tool.coverage.run]
+branch = true
+source = ["demo_command_center"]
+# Omitting is NOT the same as testing. Each line names the external dependency
+# that would be required, and docs/release-gate-report.md records them as NOT
+# EXECUTED rather than folding them into the coverage number.
+omit = [
+  "*/cli/*",                                     # operator tooling
+  "*/storage/data_api.py",                       # needs a live Aurora cluster
+  "*/integrations/google_calendar/client.py",    # needs Google credentials
+  "*/integrations/cashfree/client.py",           # needs a Cashfree merchant account
+  "*/integrations/openai/client.py",             # needs an OpenAI account
+  "*/integrations/meta_whatsapp/sender.py",      # needs a Meta WABA
+  "*/integrations/nxtutors_gateway/client.py",   # needs the Laravel gateway
+  "*/api/handlers/*",                            # AWS event shapes; services are covered
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

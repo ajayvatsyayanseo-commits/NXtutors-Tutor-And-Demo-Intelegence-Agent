@@ -1,0 +1,24 @@
+# Home tuition. Distance is a first-class constraint: a brilliant tutor 40 km
+# away will cancel by week three, so proximity and availability outrank a
+# marginally better academic fit.
+extends: _base
+policy_id: home_tuition
+version: "1"
+description: >
+  In-person tuition at the student's home. Proximity weighted heavily because
+  travel feasibility is the single biggest predictor of a home arrangement
+  surviving past the first month.
+
+weights:
+  academic: 0.20
+  subject_expertise: 0.18
+  availability: 0.18
+  proximity: 0.22
+  performance: 0.11
+  negotiation: 0.06
+  personality: 0.03
+  replacement_risk: 0.02
+
+proximity:
+  max_useful_distance_km: 15.0
+  max_travel_minutes: 45

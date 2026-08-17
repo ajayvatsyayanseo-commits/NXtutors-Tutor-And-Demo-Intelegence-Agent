@@ -1,0 +1,5 @@
+"""Typed configuration and versioned business policy loading."""
+
+from tutor_match_meta.config.settings import Settings, get_settings
+
+__all__ = ["Settings", "get_settings"]

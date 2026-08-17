@@ -1,0 +1,79 @@
+# Regional monitoring and underperformance detection — capability 129.
+#
+# Every rule carries a minimum sample size, a sustained-window requirement and a
+# cooldown. All three exist to prevent the failure mode that kills alerting:
+# three no-shows out of four demos in a small region firing a "critical
+# underperformance" page, twice an hour, until nobody reads them.
+policy_id: monitoring
+version: v1
+description: >
+  Rolling-window underperformance rules for regional demo operations, with
+  sample floors, sustained windows and cooldowns.
+
+window_hours: 24
+baseline_days: 28
+
+# Absence before this much time has passed after the scheduled start is not a
+# no-show, it is traffic.
+no_show_grace_minutes: 10
+
+rules:
+  - name: student_no_show_spike
+    metric: student_no_show_rate
+    comparison: above
+    threshold: 0.5
+    mode: relative_to_baseline
+    min_sample_size: 20
+    sustained_windows: 2
+    cooldown_hours: 24
+    severity: warning
+
+  - name: tutor_no_show_spike
+    metric: tutor_no_show_rate
+    comparison: above
+    threshold: 0.05
+    mode: absolute
+    min_sample_size: 15
+    sustained_windows: 1
+    cooldown_hours: 12
+    severity: critical
+
+  - name: conversion_below_baseline
+    metric: conversion_rate
+    comparison: below
+    threshold: 0.3
+    mode: relative_to_baseline
+    min_sample_size: 30
+    sustained_windows: 3
+    cooldown_hours: 48
+    severity: warning
+
+  - name: demo_quality_decline
+    metric: mean_quality_score
+    comparison: below
+    threshold: 0.2
+    mode: relative_to_baseline
+    min_sample_size: 20
+    sustained_windows: 2
+    cooldown_hours: 48
+    severity: warning
+
+  - name: reschedule_rate_high
+    metric: reschedule_rate
+    comparison: above
+    threshold: 0.35
+    mode: absolute
+    min_sample_size: 25
+    sustained_windows: 2
+    cooldown_hours: 24
+    severity: info
+
+  - name: reminder_delivery_failure
+    metric: reminder_failure_rate
+    comparison: above
+    threshold: 0.1
+    mode: absolute
+    min_sample_size: 20
+    sustained_windows: 1
+    cooldown_hours: 6
+    severity: critical

@@ -1,0 +1,68 @@
+# JEE / NEET / Olympiad. Specialist domain: the pool is small, the subject
+# requirement is exact, and a generalist school tutor is not a substitute.
+extends: _base
+policy_id: competitive_exam
+version: "1"
+description: >
+  JEE, NEET, NTSE, CUET and Olympiad preparation. Subject expertise and
+  demonstrated outcomes dominate. The candidate bar is the highest of any
+  policy: for competitive prep, returning one genuinely specialist tutor beats
+  returning three plausible ones.
+
+weights:
+  academic: 0.24
+  subject_expertise: 0.30
+  availability: 0.13
+  proximity: 0.06
+  performance: 0.20
+  negotiation: 0.03
+  personality: 0.02
+  replacement_risk: 0.02
+
+thresholds:
+  min_final_score: 0.60
+  # Specialist pools are genuinely small. Two strong names is a good outcome.
+  shortlist_size: 2
+  min_weight_coverage: 0.55
+
+reviews:
+  min_reviews_for_rating: 4
+  full_confidence_at: 25
+  prior_mean: 3.7
+
+negotiation:
+  # Specialist tutors hold firmer on fee, and the pool is too small to filter
+  # aggressively on price.
+  max_over_budget_ratio: 1.40
+  strategies:
+    - code: within_budget
+      applies_up_to_ratio: 1.0
+      description: Tutor's stated fee already fits the parent's budget.
+      requires_approval: false
+    - code: standard_package_discount
+      applies_up_to_ratio: 1.15
+      description: >
+        Offer the published multi-session package rate for exam-prep batches.
+      requires_approval: false
+    - code: reduced_frequency
+      applies_up_to_ratio: 1.25
+      description: >
+        Propose fewer sessions per week at the tutor's standard rate.
+      requires_approval: false
+    - code: coordinator_review
+      applies_up_to_ratio: 1.40
+      description: >
+        Specialist scarcity premium — needs a human coordinator to approve an
+        exception against the tutor's minimum fee.
+      requires_approval: true
+
+explanation:
+  max_reasons_per_tutor: 3
+  citable_dimensions:
+    - subject_expertise
+    - academic
+    - performance
+    - availability
+    - proximity
+    - personality
+    - negotiation

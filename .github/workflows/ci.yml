@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Deliberately `local`: the deployed-environment validator in config/settings.py
+  # demands real secrets, and CI must never hold them.
+  TMM_ENVIRONMENT: local
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - run: uv sync --all-extras --frozen
+
+      - name: Format check
+        run: uv run ruff format --check src tests scripts
+
+      - name: Lint
+        run: uv run ruff check src tests scripts
+
+      - name: Type check
+        run: uv run mypy src
+
+      - name: Migration safety gate
+        run: uv run python scripts/check_migration_safety.py
+
+      - name: .env.example is in sync with Settings
+        run: uv run python scripts/sync_env_example.py --check
+
+      - name: Unit and integration tests
+        run: uv run pytest --cov=tutor_match_meta --cov-report=xml --cov-report=term-missing
+
+      - name: Contract tests
+        run: uv run pytest -m contract -q
+
+      - name: Security invariants
+        run: uv run pytest -m security -q
+
+      # In-process throughput and concurrency. Reports p50/p95/p99 for a full
+      # turn and asserts a duplicate storm still yields one decision. The
+      # locustfile alongside it needs a deployed environment and cannot run
+      # here — see tests/load/test_throughput.py for the split.
+      - name: Load and concurrency
+        run: uv run pytest -m load -q -s
+
+      - name: Local end-to-end
+        run: uv run tutor-match-e2e
+
+      - name: Doctor
+        run: uv run tutor-match-doctor
+
+      # Integration tests need a disposable PostgreSQL. They are reported
+      # rather than silently skipped, because "skipped" and "passed" are
+      # different answers and docs/release-gate-report.md records which.
+      - name: Integration tests (PostgreSQL)
+        env:
+          TMM_INTEGRATION_DSN: postgresql+asyncpg://tmm:tmm@localhost:5433/tmm
+        run: uv run pytest -m integration -q --no-header -rs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage.xml
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync --all-extras --frozen
+
+      - name: Lockfile is in sync
+        # `--frozen` above already fails on drift, but stating it as its own
+        # gate means the release report can cite it (§35, dependency lock
+        # verification) rather than inferring it from an install step.
+        run: uv lock --check
+
+      - name: Dependency vulnerabilities
+        # Audit the exported lockfile rather than the installed environment.
+        # `pip-audit --strict` treats the editable local package as an
+        # un-auditable skip and fails; exporting also means we audit exactly
+        # what `uv.lock` pins, which is what ships.
+        run: |
+          uv export --format requirements-txt --all-extras \
+            --no-emit-project --no-hashes -o requirements.audit.txt
+          uv run pip-audit --strict -r requirements.audit.txt
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: SAST (ruff security rules)
+        run: uv run ruff check --select S src
+
+      - name: SAST (bandit)
+        # Overlaps ruff's `S` rules deliberately: bandit catches a few patterns
+        # ruff does not (weak hashes in a crypto context, subprocess shell use),
+        # and disagreement between two scanners is itself worth seeing.
+        run: uv run bandit -r src -ll -c pyproject.toml
+
+      - name: SAST (semgrep)
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/security-audit
+            p/secrets
+            p/sql-injection
+        env:
+          SEMGREP_RULES: p/python p/security-audit p/secrets p/sql-injection
+
+      - name: No secrets in .env.example
+        run: |
+          if grep -qE '(sk-[A-Za-z0-9]{20,}|EAA[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16})' .env.example; then
+            echo "::error::a real-looking credential is present in .env.example"
+            exit 1
+          fi
+
+  iac:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - name: Format
+        run: terraform -chdir=infra/terraform fmt -check -recursive
+      - name: Validate
+        run: |
+          terraform -chdir=infra/terraform init -backend=false
+          terraform -chdir=infra/terraform validate
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra/terraform
+          framework: terraform
+          soft_fail: false
+          skip_check: CKV_AWS_116,CKV_AWS_117

@@ -1,0 +1,19 @@
+# The default. Routine day-to-day school support, no exam pressure.
+extends: _base
+policy_id: regular_school_support
+version: "1"
+description: >
+  Ongoing school support with no imminent exam. Closest to the base weighting;
+  personality and availability matter slightly more than in exam policies
+  because these arrangements run for years and are abandoned over friction, not
+  over syllabus depth.
+
+weights:
+  academic: 0.21
+  subject_expertise: 0.19
+  availability: 0.18
+  proximity: 0.15
+  performance: 0.12
+  negotiation: 0.07
+  personality: 0.06
+  replacement_risk: 0.02
