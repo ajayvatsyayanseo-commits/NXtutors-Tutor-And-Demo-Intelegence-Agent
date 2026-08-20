@@ -28,6 +28,9 @@ dependencies = [
 # boto3 is present in the Lambda runtime; pinning it here is for local parity
 # only and it is excluded from the deployment ZIP.
 aws = ["boto3==1.35.90"]
+# Only needed for `persistence_mode=postgres_dsn`. Excluded from the Lambda
+# package unless that mode is used, so the Data API path stays driver-free.
+postgres = ["asyncpg==0.30.0"]
 dev = [
   "bandit==1.8.0",
   "boto3==1.35.90",
@@ -46,6 +49,9 @@ dev = [
 dcc-doctor = "demo_command_center.cli.doctor:main"
 dcc-e2e = "demo_command_center.cli.local_e2e:main"
 dcc-migrate = "demo_command_center.cli.migrate:main"
+# The combined run: the real tutor_match_meta orchestrator driving the real
+# Demo lifecycle. Refuses to fall back to the fake.
+dcc-sync = "demo_command_center.cli.combined_e2e:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/demo_command_center"]
@@ -72,7 +78,16 @@ mypy_path = "src"
 exclude = ["tests"]
 
 [[tool.mypy.overrides]]
-module = ["boto3.*", "botocore.*", "dateutil.*"]
+module = ["boto3.*", "botocore.*", "dateutil.*", "asyncpg.*"]
+ignore_missing_imports = true
+
+# The Tutor Intelligence package ships no `py.typed`. It is an optional runtime
+# dependency reached only through `integrations/tutor_intelligence/local_adapter.py`,
+# which guards the import and falls back to the fake. Everything crossing that
+# boundary is re-validated into Demo's own Pydantic contracts, so the untyped
+# import is contained to one module.
+[[tool.mypy.overrides]]
+module = ["tutor_match_meta.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
@@ -80,7 +95,12 @@ addopts = "--strict-config --strict-markers -ra"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
-pythonpath = ["src"]
+# `../src` puts the Tutor Intelligence package on the path for the contract
+# tests only. Demo imports nothing from it at runtime — `local_adapter` guards
+# the import and falls back to the fake — but with the path absent the envelope
+# compatibility test would silently skip, which is the one test whose skipping
+# nobody would notice until routing broke.
+pythonpath = ["src", "../src"]
 markers = [
   "contract: pins a versioned external contract",
   "security: exercises a security or anti-fabrication invariant",
@@ -103,14 +123,26 @@ source = ["demo_command_center"]
 # that would be required, and docs/release-gate-report.md records them as NOT
 # EXECUTED rather than folding them into the coverage number.
 omit = [
-  "*/cli/*",                                     # operator tooling
-  "*/storage/data_api.py",                       # needs a live Aurora cluster
-  "*/integrations/google_calendar/client.py",    # needs Google credentials
-  "*/integrations/cashfree/client.py",           # needs a Cashfree merchant account
-  "*/integrations/openai/client.py",             # needs an OpenAI account
-  "*/integrations/meta_whatsapp/sender.py",      # needs a Meta WABA
-  "*/integrations/nxtutors_gateway/client.py",   # needs the Laravel gateway
-  "*/api/handlers/*",                            # AWS event shapes; services are covered
+  "*/cli/*",                                       # operator tooling; run by `make doctor`/`make demo`
+  "*/storage/data_api/*",                          # needs a live Aurora cluster; see tests/integration/
+  # Needs a live PostgreSQL. NOT untested: `scripts/verify_live_wiring.py`
+  # exercises it against the real shared database and asserts the round-trip,
+  # the optimistic lock and the slot-hold exclusion. That run is recorded in
+  # docs/final-e2e-report.md; it is simply not a pytest run, so counting it
+  # here would overstate what the unit suite proves.
+  "*/storage/postgres/*",
+  "*/storage/scheduler.py",                        # needs EventBridge Scheduler
+  "*/integrations/google_calendar/client.py",      # needs Google credentials
+  "*/integrations/cashfree/client.py",             # needs a Cashfree merchant account
+  "*/integrations/openai/client.py",               # needs an OpenAI account
+  "*/integrations/meta_whatsapp/sender.py",        # needs a Meta WABA
+  "*/integrations/nxtutors_gateway/client.py",     # needs the Laravel gateway
+  "*/integrations/nxtutors_gateway/contacts.py",   # thin cache over the gateway client
+  "*/integrations/onboarding/bus.py",              # needs a peer agent endpoint
+  "*/integrations/tutor_intelligence/local_adapter.py",  # needs tutor_match_meta installed
+  "*/handlers/*",                                  # AWS event shapes; the services are covered
+  "*/resilience/http.py",                          # needs a network peer
+  "*/glue/lifecycle.py",                           # the harness itself; it *is* the e2e test
 ]
 
 [tool.coverage.report]

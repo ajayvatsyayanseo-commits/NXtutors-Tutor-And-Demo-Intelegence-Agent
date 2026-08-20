@@ -1,4 +1,4 @@
-.PHONY: install format lint type test test-unit test-security contracts audit security check e2e doctor migrate env-example run clean
+.PHONY: install format lint type test test-unit test-security contracts audit security check e2e doctor migrate env-example run clean verify verify-fast
 
 install:
 	uv sync --all-extras
@@ -44,6 +44,17 @@ env-example:
 	uv run python scripts/sync_env_example.py
 
 # The one gate. Everything a PR must pass.
+# The whole agent — both halves and the seam between them — in one command.
+# Two separate suites made it easy to leave the second one red for a week
+# without noticing, and the parts that only exist *between* the halves (shared
+# config, shared database, the handoff) had no gate at all.
+verify:
+	uv run python scripts/verify_agent.py
+
+# Same, minus anything needing the live database or the network.
+verify-fast:
+	uv run python scripts/verify_agent.py --fast
+
 check: lint type test contracts
 
 # Full local end-to-end sample conversation, zero AWS/OpenAI credentials needed.

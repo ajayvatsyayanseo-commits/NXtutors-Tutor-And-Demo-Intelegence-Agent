@@ -54,7 +54,19 @@ _INJECTION_PATTERNS: tuple[re.Pattern[str], ...] = (
 
 #: Zero-width and bidirectional-override characters. Used to hide an injection
 #: from a human reviewer while the model still reads it.
-_INVISIBLE: Final = re.compile(r"[​-‏‪-‮⁦-⁩﻿]")
+#:
+#: Written as escapes, not as literal characters. A source file containing real
+#: bidi controls is the same trick aimed at *us* — a reviewer reading this file
+#: could not see what the class contained, and bandit flags it (B613) for
+#: exactly that reason. The escapes are also simply readable.
+_INVISIBLE: Final = re.compile(
+    "["
+    "\u200b-\u200f"  # zero-width space .. right-to-left mark
+    "\u202a-\u202e"  # bidirectional embeddings and overrides
+    "\u2066-\u2069"  # bidirectional isolates
+    "\ufeff"  # zero-width no-break space (BOM)
+    "]"
+)
 
 
 @dataclass(frozen=True, slots=True)

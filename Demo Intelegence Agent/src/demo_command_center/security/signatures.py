@@ -41,7 +41,8 @@ class SignatureFailure(StrEnum):
     TIMESTAMP_OUT_OF_WINDOW = "timestamp_out_of_window"
     SIGNATURE_MISMATCH = "signature_mismatch"
     BODY_TOO_LARGE = "body_too_large"
-    EMPTY_SECRET = "empty_secret"
+    # A failure-reason label, not a credential. S105 matches on the name.
+    EMPTY_SECRET = "empty_secret"  # noqa: S105
 
 
 class SignatureError(Exception):

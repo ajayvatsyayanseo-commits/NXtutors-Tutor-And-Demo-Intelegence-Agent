@@ -1,0 +1,202 @@
+name: demo-command-center-deploy
+
+# OIDC only. There is no AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY anywhere in
+# this workflow, and `permissions: id-token: write` is what replaces them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, staging, production]
+      confirm:
+        description: Type the environment name again to confirm
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    working-directory: 'Demo Intelegence Agent'
+
+jobs:
+  guard:
+    name: confirm target
+    runs-on: ubuntu-latest
+    steps:
+      - name: the typed confirmation must match
+        run: |
+          if [ "${{ inputs.confirm }}" != "${{ inputs.environment }}" ]; then
+            echo "confirmation '${{ inputs.confirm }}' does not match '${{ inputs.environment }}'"
+            exit 1
+          fi
+
+  build:
+    name: build and verify
+    needs: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+
+      # Never deploy something that has not passed its own gate.
+      - name: gate
+        run: |
+          uv run ruff check src tests
+          uv run mypy src
+          uv run pytest -q
+        env:
+          DCC_ENVIRONMENT: local
+          DCC_HASH_PEPPER: ci-test-pepper
+          DCC_WEBSITE_PUBLIC_BASE_URL: https://nxtutors.example
+
+      - name: build package and enforce size limit
+        run: uv run python scripts/build_lambda.py
+
+      - name: prohibited-resource scan
+        run: uv run python scripts/scan_prohibited.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ inputs.environment }}
+          path: 'Demo Intelegence Agent/dist/demo_command_center.zip'
+          retention-days: 30
+
+  deploy:
+    name: deploy to ${{ inputs.environment }}
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Production requires a manual approval configured on the GitHub
+    # environment. That approval gate is the control; this line is what
+    # subjects the job to it.
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: package-${{ inputs.environment }}
+          path: 'Demo Intelegence Agent/dist'
+
+      - name: assume the deploy role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.DCC_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.DCC_AWS_REGION }}
+          role-session-name: dcc-deploy-${{ github.run_id }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: terraform init
+        # `backend.hcl` is supplied per environment by the operator. Demo does
+        # not create an S3 state bucket; see docs/operations/terraform-state.md.
+        run: terraform init -backend-config=backend.hcl
+        working-directory: 'Demo Intelegence Agent/infra/terraform'
+
+      - name: terraform plan
+        run: |
+          terraform plan -input=false -out=tfplan \
+            -var="environment=${{ inputs.environment }}" \
+            -var="release_sha=${{ github.sha }}" \
+            -var-file="${{ inputs.environment }}.tfvars"
+        working-directory: 'Demo Intelegence Agent/infra/terraform'
+
+      - name: fail the deploy if the plan destroys anything unexpected
+        run: |
+          terraform show -json tfplan > plan.json
+          DESTROYS=$(python3 -c "
+          import json
+          plan = json.load(open('plan.json'))
+          changes = plan.get('resource_changes', [])
+          gone = [c['address'] for c in changes if 'delete' in c['change']['actions']]
+          print('\n'.join(gone))
+          ")
+          if [ -n "$DESTROYS" ]; then
+            echo "plan destroys resources:"; echo "$DESTROYS"
+            echo "Review before proceeding. Re-run with an explicit approval if intended."
+            exit 1
+          fi
+        working-directory: 'Demo Intelegence Agent/infra/terraform'
+
+      - name: terraform apply
+        run: terraform apply -input=false -auto-approve tfplan
+        working-directory: 'Demo Intelegence Agent/infra/terraform'
+
+      - name: apply migrations
+        run: |
+          pip install --quiet -r requirements.lambda.txt boto3
+          PYTHONPATH=src python -m demo_command_center.cli.migrate
+        env:
+          DCC_ENVIRONMENT: ${{ inputs.environment }}
+          DCC_PERSISTENCE_MODE: data_api
+          DCC_AURORA_CLUSTER_ARN: ${{ vars.DCC_AURORA_CLUSTER_ARN }}
+          DCC_AURORA_SECRET_ARN: ${{ vars.DCC_AURORA_SECRET_ARN }}
+
+  smoke:
+    name: post-deploy smoke
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.DCC_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.DCC_AWS_REGION }}
+          role-session-name: dcc-smoke-${{ github.run_id }}
+
+      - name: health check every function alias
+        id: health
+        run: |
+          set -e
+          PREFIX="demo-command-center-${{ inputs.environment }}"
+          FAILED=""
+          for fn in $(aws lambda list-functions \
+              --query "Functions[?starts_with(FunctionName, '$PREFIX')].FunctionName" \
+              --output text); do
+            STATE=$(aws lambda get-function-configuration \
+              --function-name "$fn" --qualifier live \
+              --query 'State' --output text)
+            echo "$fn: $STATE"
+            [ "$STATE" = "Active" ] || FAILED="$FAILED $fn"
+          done
+          if [ -n "$FAILED" ]; then
+            echo "unhealthy:$FAILED"
+            echo "healthy=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "healthy=true" >> "$GITHUB_OUTPUT"
+
+      - name: roll the alias back on a failed health check
+        if: failure()
+        run: |
+          PREFIX="demo-command-center-${{ inputs.environment }}"
+          for fn in $(aws lambda list-functions \
+              --query "Functions[?starts_with(FunctionName, '$PREFIX')].FunctionName" \
+              --output text); do
+            # The version before the one `live` currently points at.
+            PREVIOUS=$(aws lambda list-versions-by-function --function-name "$fn" \
+              --query 'Versions[-2].Version' --output text)
+            if [ "$PREVIOUS" != "None" ] && [ -n "$PREVIOUS" ]; then
+              echo "rolling $fn back to version $PREVIOUS"
+              aws lambda update-alias --function-name "$fn" \
+                --name live --function-version "$PREVIOUS"
+            fi
+          done
+          exit 1

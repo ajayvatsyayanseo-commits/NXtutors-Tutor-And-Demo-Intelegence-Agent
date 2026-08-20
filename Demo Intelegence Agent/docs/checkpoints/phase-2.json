@@ -1,0 +1,233 @@
+{
+  "schema_version": "1",
+  "phase": 2,
+  "status": "complete",
+  "production_ready": false,
+  "production_ready_note": "Controls are implemented and tested against fakes. Nothing has run against a real AWS account, Meta webhook, Cashfree payment or Aurora cluster. See remaining_work.",
+  "git": {
+    "baseline_commit": "594c7585fdb7ab7b448ed3ea30beec2e18160b9f",
+    "head_commit": "594c7585fdb7ab7b448ed3ea30beec2e18160b9f",
+    "commit_created": false,
+    "push_performed": false
+  },
+  "entry_audit": {
+    "document": "docs/checkpoints/phase-2-entry-audit.md",
+    "phase_1_claims_independently_verified": true,
+    "protected_files_verified": 199,
+    "protected_drift": 0,
+    "tests_at_entry": 260,
+    "coverage_at_entry": 82.19,
+    "demo_infra_files_at_entry": 0,
+    "demo_ci_workflows_at_entry": 0,
+    "code_defects_found": [
+      "commands.py passed a raw string to ObjectionAnalysisV1.has() under a type: ignore; worked only because ObjectionCategory is a StrEnum"
+    ],
+    "gaps_catalogued": 14,
+    "gaps_closed": 14
+  },
+  "protected_paths": {
+    "files_verified": 199,
+    "files_changed": 0,
+    "git_status_clean": true,
+    "tutor_suite_after": {"passed": 772, "skipped": 18, "xfailed": 1, "failed": 0},
+    "tutor_workflows_modified": 0,
+    "tutor_infra_modified": 0,
+    "new_root_workflows_added": 3
+  },
+  "infrastructure": {
+    "iac_files": 5,
+    "terraform_fmt": "pass",
+    "terraform_validate": "pass",
+    "terraform_errors_caught_and_fixed": [
+      "iam.tf referenced aws_lambda_function.reminder_worker which does not exist (workers are a for_each map)",
+      "duplicate `live` alias declared for the reminder worker would have conflicted at apply"
+    ],
+    "prohibited_resources": {
+      "s3": false,
+      "nat_gateway": false,
+      "vpc_config": false,
+      "ec2": false,
+      "ecs_fargate": false,
+      "eks": false,
+      "elasticache_redis": false,
+      "new_database_cluster": false,
+      "always_on_worker": false,
+      "long_lived_aws_credentials_in_github": false
+    },
+    "scan_result": "0 findings",
+    "lambda_package_bytes": 5076582,
+    "lambda_package_mb": 4.84,
+    "direct_upload_limit_mb": 50,
+    "artifact_delivery": "direct upload via filename + source_code_hash",
+    "terraform_backend": "unconfigured — escalated to the operator in docs/operations/terraform-state.md"
+  },
+  "topology": {
+    "lambda_functions": 13,
+    "queues": 5,
+    "dead_letter_queues": 5,
+    "lanes": [
+      {"name": "payment", "priority": 1, "type": "fifo", "concurrency": 5},
+      {"name": "scheduling", "priority": 2, "type": "fifo", "concurrency": 40},
+      {"name": "customer_outbound", "priority": 3, "type": "standard", "concurrency": 20},
+      {"name": "reminders", "priority": 4, "type": "standard", "concurrency": 10},
+      {"name": "analytics", "priority": 5, "type": "standard", "concurrency": 30}
+    ],
+    "fifo_message_group": "conversation_ref for ordered lanes; event type for analytics",
+    "visibility_timeout_multiplier": 6,
+    "partial_batch_failure_reporting": true,
+    "vpc_attached_functions": 0,
+    "conversation_owners": 1,
+    "whatsapp_senders": 1
+  },
+  "iam": {
+    "roles": 9,
+    "wildcard_action_and_resource_policies": 0,
+    "vpc_execution_role_attachments": 0,
+    "notable": [
+      "outbound worker holds no rds-data grant at all",
+      "ingress cannot read the database or call any provider",
+      "payment worker cannot send a WhatsApp message",
+      "scheduler assume-role carries an aws:SourceAccount confused-deputy guard",
+      "ops-api region scoping is enforced in the application; IAM cannot express it"
+    ]
+  },
+  "modules_added": {
+    "orchestration/tools.py": "closed tool registry; forbidden tools are absent, not blocked",
+    "orchestration/authorisation.py": "nine-stage pipeline; every stage may only refuse",
+    "glue/routing.py": "capability routing, lanes, write-ownership map",
+    "glue/saga.py": "booking and payment sagas with reverse-order compensation",
+    "memory/context.py": "structured memory; no authoritative fact stored only as prose",
+    "cache/layers.py": "L1/L2 with a NEVER_CACHE refusal list and per-kind TTL ceilings",
+    "human_handoff/escalation.py": "20 triggers, privacy-safe packet with prohibited_actions",
+    "cost_control/budget.py": "four LLM ceilings, daily circuit, ten forbidden uses",
+    "resilience/errors.py": "13-class taxonomy, closed disposition set, full-jitter backoff",
+    "resilience/providers.py": "per-provider breakers with declared honest degradation",
+    "analytics/drift.py": "8 drift kinds; AUTO_APPLY_ENABLED is False and asserted",
+    "handlers/capabilities.py": "eight per-capability Lambda entry points"
+  },
+  "security": {
+    "threat_model": "docs/security/threat-model.md",
+    "threats_documented": 34,
+    "every_threat_has_control_and_test": true,
+    "gap_found_by_new_tests": "provider API tokens and HMAC signatures were not redacted from logs; seven credential patterns added to security/pii.py",
+    "structural_controls": [
+      "only one module may import WhatsAppPort (AST test)",
+      "no domain module may import a network client (AST test)",
+      "no SQL interpolates anything but the validated schema (AST test)",
+      "a payment order can only be built from an ApprovedOffer",
+      "a tutor ref is looked up in a stored snapshot, never accepted",
+      "the discount floor is enforced in the engine and as a DB CHECK",
+      "drift cannot auto-apply",
+      "no capability may write another capability's tables"
+    ]
+  },
+  "gates": {
+    "lint": {"result": "pass"},
+    "type": {"result": "pass", "files": 130, "strict": true},
+    "test": {"result": "pass", "passed": 389, "failed": 0, "coverage_percent": 82.80, "coverage_floor": 80},
+    "contracts": {"result": "pass", "passed": 17},
+    "e2e": {"result": "pass", "passed": 33},
+    "test_security": {"result": "pass", "passed": 212},
+    "load": {"result": "pass", "passed": 4},
+    "security_bandit": {"result": "pass", "high": 0, "medium": 0},
+    "demo": {"result": "pass", "steps": "30/30", "final_state": "CONVERTED"},
+    "doctor": {"result": "pass", "problems": 0, "gaps": 8},
+    "migrate_dry_run": {"result": "pass"},
+    "terraform_fmt": {"result": "pass"},
+    "terraform_validate": {"result": "pass"},
+    "lambda_build_and_size_gate": {"result": "pass", "size_mb": 4.84, "limit_mb": 50},
+    "prohibited_scan": {"result": "pass", "findings": 0},
+    "tutor_suite_regression": {"result": "pass", "passed": 772},
+    "pip_audit": {"result": "not_executed", "reason": "needs uv export against a project-local environment; wired into CI"},
+    "integration": {"result": "not_executed", "reason": "needs a live Aurora cluster; skipped is not a pass"},
+    "actionlint": {"result": "not_executed", "reason": "actionlint is not installed on this host; the workflows are unexecuted"},
+    "make": {"result": "not_executed", "reason": "make is not installed on this Windows host; every target's underlying command was run directly"}
+  },
+  "load_results": {
+    "simulated_providers_only": true,
+    "real_apis_called": 0,
+    "baseline": {
+      "conversations": 10, "concurrency": 2, "completed": 10, "errors": 0,
+      "p50_ms": 11.69, "p95_ms": 13.93, "p99_ms": 13.93, "wall_seconds": 0.19
+    },
+    "per_completed_demo": {"llm_calls": 2, "tutor_match_calls": 1, "calendar_events": 1, "messages": 7},
+    "slot_contention": {"attempts": 50, "winners": 1, "refusals": 49, "resolution_ms": 1.2},
+    "turn_latency_after_60_turns_ms": 0.1,
+    "profiles_defined": ["baseline", "peak", "burst", "stress", "soak"],
+    "profiles_run_in_ci": ["baseline"],
+    "not_measured": ["lambda cold starts", "SQS behaviour", "Data API latency", "real provider latency"]
+  },
+  "cicd": {
+    "workflows": [
+      ".github/workflows/demo-command-center-ci.yml",
+      ".github/workflows/demo-command-center-deploy.yml",
+      ".github/workflows/demo-command-center-rollback.yml"
+    ],
+    "path_filtered": true,
+    "tutor_workflows_untouched": true,
+    "oidc_only": true,
+    "long_lived_aws_keys": false,
+    "production_manual_approval": true,
+    "immutable_versions_and_aliases": true,
+    "automatic_alias_rollback_on_health_failure": true,
+    "plan_fails_on_unexpected_destroy": true
+  },
+  "definition_of_done": {
+    "protected_tutor_paths_unchanged": true,
+    "separate_lambda_per_capability": true,
+    "one_orchestrator_one_outbound_owner": true,
+    "no_redis": true,
+    "no_new_s3": true,
+    "no_nat_gateway": true,
+    "no_fargate_ec2_ecs": true,
+    "no_new_db_cluster": true,
+    "iam_least_privilege": true,
+    "signature_and_replay_controls": true,
+    "pii_controls": true,
+    "guardrails": true,
+    "hitl": true,
+    "glue_memory_cache_functional": true,
+    "idempotency_outbox_sagas": true,
+    "retries_circuits_fallbacks": true,
+    "token_and_cost_budgets": true,
+    "metrics_traces_alerts": true,
+    "drift_evaluation": true,
+    "demo_specific_cicd": true,
+    "direct_lambda_package_gate": true,
+    "security_tests_pass": true,
+    "load_smoke_passes": true,
+    "no_git_commit_created": true
+  },
+  "external_actions_not_executed": [
+    "Create the OIDC provider and DCC_DEPLOY_ROLE_ARN deploy role",
+    "Configure GitHub environments with production approval",
+    "Set DCC_AWS_REGION, DCC_AURORA_CLUSTER_ARN, DCC_AURORA_SECRET_ARN as GitHub variables",
+    "Create the Secrets Manager secret holding provider credentials",
+    "Decide the Terraform backend (see docs/operations/terraform-state.md)",
+    "Confirm the tutor-confirmation template name in Meta Business Manager",
+    "Verify the Laravel gateway endpoints",
+    "Provide Google service-account credentials"
+  ],
+  "remaining_work": [
+    {"rank": 1, "blocking_production": true, "item": "Seven of ten aggregates still use in-memory repositories under persistence_mode=data_api; state would not survive a container recycle"},
+    {"rank": 2, "blocking_production": true, "item": "Laravel gateway endpoints unverified"},
+    {"rank": 3, "blocking_production": true, "item": "Tutor-confirmation template name unknown and deliberately not guessed"},
+    {"rank": 4, "blocking_production": true, "item": "Google credential provider not implemented; GoogleCalendarClient takes a token_provider and none exists"},
+    {"rank": 5, "blocking_production": true, "item": "Secrets Manager resolution not wired; settings read from the environment"},
+    {"rank": 6, "blocking_production": false, "item": "Ops API has no HTTP surface; ops-api currently points at the handoff handler"},
+    {"rank": 7, "blocking_production": false, "item": "pip-audit has never actually run; wired into CI, unexecuted here"},
+    {"rank": 8, "blocking_production": false, "item": "The authorisation pipeline is complete and tested but not yet on the orchestrator's hot path; commands.py still dispatches through its own table"},
+    {"rank": 9, "blocking_production": false, "item": "No deployed load test; cold starts, SQS and Data API latency unmeasured"},
+    {"rank": 10, "blocking_production": false, "item": "In-process circuit breakers are per container; a cold fleet re-discovers a dead provider"}
+  ],
+  "artefacts": {
+    "entry_audit": "docs/checkpoints/phase-2-entry-audit.md",
+    "report": "docs/checkpoints/phase-2-hardening-report.md",
+    "threat_model": "docs/security/threat-model.md",
+    "cost_model": "docs/operations/cost-model.md",
+    "terraform_state_decision": "docs/operations/terraform-state.md",
+    "infrastructure": "infra/terraform/",
+    "build_gate": "scripts/build_lambda.py",
+    "prohibited_scan": "scripts/scan_prohibited.py"
+  }
+}

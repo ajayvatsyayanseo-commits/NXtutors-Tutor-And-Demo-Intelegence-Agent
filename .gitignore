@@ -1,5 +1,11 @@
 __pycache__/
 .env.backup-20260813-102643
+.env.backup-before-audit
+.env.backup-before-dcc-merge
+.env.backup-before-meta
+.env.backup-before-clean
+.env
+.env.example
 *.py[cod]
 .venv/
 venv/

@@ -191,7 +191,7 @@ resource "aws_cloudwatch_metric_alarm" "quality" {
 ###############################################################################
 
 resource "aws_cloudwatch_metric_alarm" "db_connections" {
-  alarm_name          = "${local.name}-proxy-connections"
+  alarm_name          = "${local.name}-db-connections"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
   metric_name         = "DatabaseConnections"
@@ -203,12 +203,15 @@ resource "aws_cloudwatch_metric_alarm" "db_connections" {
   # that has nothing to do with tutoring.
   threshold = var.match_worker_reserved_concurrency + var.internal_api_reserved_concurrency
   alarm_description = join(" ", [
-    "TutorMatch is using more proxy connections than its concurrency ceiling",
-    "should allow. Raising reserved concurrency without raising the proxy",
-    "limit is how the shared database gets exhausted.",
+    "TutorMatch is holding more database connections than its concurrency",
+    "ceiling should allow. With no proxy, reserved concurrency IS the",
+    "connection ceiling: raising it raises connections one-for-one.",
     "Runbook: docs/runbooks/db-outage.md"
   ])
-  dimensions         = { DBProxyName = var.rds_proxy_name }
+  # The instance's own counter, not the proxy's. There is no proxy any
+  # more: each concurrent Lambda opens its own connection straight to
+  # PostgreSQL, so this is the only place exhaustion becomes visible.
+  dimensions         = { DBInstanceIdentifier = var.db_instance_identifier }
   alarm_actions      = var.alarm_topic_arns
   treat_missing_data = "notBreaching"
   tags               = local.tags

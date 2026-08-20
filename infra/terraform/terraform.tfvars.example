@@ -3,9 +3,9 @@ environment           = "dev"
 artifact_bucket       = "nxtutors-lambda-artifacts"
 artifact_key          = "tutor-match-meta/REPLACE_WITH_GIT_SHA.zip"
 secret_name           = "/tutor-match-meta/dev"
-vpc_id                = "vpc-REPLACE"
-private_subnet_ids    = ["subnet-REPLACE-a", "subnet-REPLACE-b"]
-vpc_cidr_blocks       = ["10.0.0.0/16"]
-database_cidr_blocks  = ["10.0.10.0/24"]
-rds_proxy_resource_id = "prx-REPLACE"
 alarm_topic_arns      = ["arn:aws:sns:ap-south-1:REPLACE:nxtutors-alerts"]
+
+# The RDS instance the connection alarm watches. An instance identifier, not a
+# proxy name: there is no RDS Proxy any more, so each concurrent Lambda holds
+# its own connection and the instance's own counter is where exhaustion shows.
+db_instance_identifier = "database-1"

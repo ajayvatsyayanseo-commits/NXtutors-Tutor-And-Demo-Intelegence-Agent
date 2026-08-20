@@ -31,6 +31,27 @@ _LONG_DIGITS: Final = re.compile(r"\b\d{12,19}\b")
 #: UPI VPAs turn up when a parent types their payment handle into WhatsApp.
 _UPI: Final = re.compile(r"\b[\w.\-]{2,}@(?:ok\w+|paytm|ybl|upi|axl|ibl|apl)\b", re.IGNORECASE)
 
+#: Provider credentials. These are not customer PII, but they are the most
+#: damaging thing that can reach a log line: an error path that echoes a
+#: request header, or an exception carrying the token that failed, leaks an
+#: account rather than a person.
+#:
+#: Each pattern is anchored on a vendor's documented prefix so it cannot match
+#: ordinary text. The trailing generic rules catch a `Bearer` header and a long
+#: hex digest, which is what an HMAC signature looks like.
+_OPENAI_KEY: Final = re.compile(r"\bsk-(?:proj-|svcacct-|admin-)?[A-Za-z0-9_-]{16,}\b")
+_META_TOKEN: Final = re.compile(r"\bEAA[A-Za-z0-9]{20,}\b")
+_CASHFREE_KEY: Final = re.compile(r"\bcfsk_[A-Za-z0-9_]{8,}\b", re.IGNORECASE)
+_GOOGLE_KEY: Final = re.compile(r"\b(?:AIza[A-Za-z0-9_-]{20,}|ya29\.[A-Za-z0-9_-]{20,})\b")
+_AWS_KEY: Final = re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{12,}\b")
+_BEARER: Final = re.compile(r"\bBearer\s+[A-Za-z0-9._~+/-]{16,}=*", re.IGNORECASE)
+#: `v1=<hex>` and `sha256=<hex>` — our own scheme and Meta's. Also catches a
+#: bare long hex run, which is what every HMAC digest looks like.
+_SIGNATURE: Final = re.compile(r"\b(?:v1=|sha256=)?[0-9a-f]{32,}\b", re.IGNORECASE)
+_PRIVATE_KEY: Final = re.compile(
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.DOTALL
+)
+
 # Replacement placeholders, not credentials. Ruff's S105 matches the names.
 PHONE_TOKEN = "[phone]"  # noqa: S105
 EMAIL_TOKEN = "[email]"  # noqa: S105
@@ -38,11 +59,26 @@ ID_TOKEN = "[id]"  # noqa: S105
 URL_TOKEN = "[url]"  # noqa: S105
 PINCODE_TOKEN = "[pincode]"  # noqa: S105
 UPI_TOKEN = "[upi]"  # noqa: S105
+CREDENTIAL_TOKEN = "[credential]"  # noqa: S105
 
-#: Order matters. Aadhaar before phone, or the tail of a 12-digit Aadhaar
-#: matches as a phone number and only half of it gets redacted. UPI before
-#: email, or `name@okaxis` is consumed by the email rule first.
+#: Order matters, and each position below is load-bearing.
+#:
+#: * Credentials first. `sk-proj-…` contains no `@` and no digits run, but a
+#:   private key block contains newlines and base64 that later rules would
+#:   shred into unrecognisable fragments — leaving enough to be useful.
+#: * Aadhaar before phone, or the tail of a 12-digit Aadhaar matches as a phone
+#:   number and only half of it gets redacted.
+#: * UPI before email, or `name@okaxis` is consumed by the email rule first.
+#: * The signature rule runs late: it is the broadest, and running it early
+#:   would eat the tail of a vendor key before its own rule matched.
 _RULES: tuple[tuple[re.Pattern[str], str], ...] = (
+    (_PRIVATE_KEY, CREDENTIAL_TOKEN),
+    (_BEARER, CREDENTIAL_TOKEN),
+    (_OPENAI_KEY, CREDENTIAL_TOKEN),
+    (_META_TOKEN, CREDENTIAL_TOKEN),
+    (_CASHFREE_KEY, CREDENTIAL_TOKEN),
+    (_GOOGLE_KEY, CREDENTIAL_TOKEN),
+    (_AWS_KEY, CREDENTIAL_TOKEN),
     (_UPI, UPI_TOKEN),
     (_EMAIL, EMAIL_TOKEN),
     (_URL, URL_TOKEN),
@@ -50,6 +86,7 @@ _RULES: tuple[tuple[re.Pattern[str], str], ...] = (
     (_LONG_DIGITS, ID_TOKEN),
     (_PAN, ID_TOKEN),
     (_PHONE, PHONE_TOKEN),
+    (_SIGNATURE, CREDENTIAL_TOKEN),
 )
 
 
@@ -88,6 +125,9 @@ def found_pii_kinds(text: str | None) -> list[str]:
         "pan": _PAN,
         "phone": _PHONE,
         "upi": _UPI,
+        "credential": _OPENAI_KEY,
+        "meta_token": _META_TOKEN,
+        "signature": _SIGNATURE,
     }
     return sorted(name for name, pattern in kinds.items() if pattern.search(text))
 

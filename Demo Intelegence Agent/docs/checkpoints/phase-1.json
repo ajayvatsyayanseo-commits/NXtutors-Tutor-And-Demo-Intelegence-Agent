@@ -1,0 +1,185 @@
+{
+  "schema_version": "1",
+  "phase": 1,
+  "status": "complete",
+  "service": {
+    "display_name": "Demo Command Center Agent",
+    "package": "demo_command_center",
+    "agent_id": "demo_command_center_agent",
+    "directory": "Demo Intelegence Agent",
+    "version": "0.1.0"
+  },
+  "git": {
+    "baseline_commit": "594c7585fdb7ab7b448ed3ea30beec2e18160b9f",
+    "head_commit": "594c7585fdb7ab7b448ed3ea30beec2e18160b9f",
+    "branch": "main",
+    "commit_created": false,
+    "push_performed": false
+  },
+  "protected_paths": {
+    "manifest": "docs/checkpoints/protected-tutor-baseline.json",
+    "prefixes": [
+      "src/tutor_match_meta/",
+      "config/policies/",
+      "migrations/",
+      "infra/terraform/",
+      "tests/",
+      ".github/workflows/"
+    ],
+    "files_verified": 199,
+    "files_changed": 0,
+    "files_missing": 0,
+    "git_status_clean": true,
+    "tutor_suite_after": {
+      "passed": 772,
+      "skipped": 18,
+      "xfailed": 1,
+      "failed": 0,
+      "skip_reason": "PostgreSQL integration tests need TMM_INTEGRATION_DSN"
+    }
+  },
+  "preexisting_condition": {
+    "description": "All 29 Demo scaffold files were deleted in the working tree but present in HEAD; the directory existed and was empty.",
+    "action": "Restored byte-exact from HEAD via `git cat-file blob` plus a file copy.",
+    "destructive_commands_used": [],
+    "user_work_discarded": false
+  },
+  "scale": {
+    "source_files": 112,
+    "source_lines": 13430,
+    "test_files": 17,
+    "test_lines": 2707,
+    "migration_files": 1,
+    "migration_lines": 529,
+    "database_tables": 36
+  },
+  "architecture": {
+    "conversation_owners": 1,
+    "state_machine": {
+      "states": 30,
+      "triggers": 58,
+      "actors": 7,
+      "pure": true,
+      "concurrency": "optimistic_locking",
+      "max_conflict_retries": 3
+    },
+    "outbound_send_paths": 1,
+    "outbound_gates": [
+      "expiry",
+      "ownership",
+      "state",
+      "opt_out",
+      "idempotency",
+      "session_window_or_template",
+      "output_guardrail",
+      "rate_limit"
+    ],
+    "capabilities": [
+      {"id": "129", "name": "Regional Demo Monitoring", "module": "capabilities/monitoring/service.py"},
+      {"id": "018", "name": "Demo Success Forecast", "module": "capabilities/forecasting/service.py"},
+      {"id": "025", "name": "Demo Scheduling", "module": "capabilities/scheduling/service.py"},
+      {"id": "026", "name": "Demo Reminders", "module": "capabilities/reminders/service.py"},
+      {"id": "031", "name": "Objection Extraction", "module": "capabilities/objection_extraction/service.py"},
+      {"id": "032", "name": "Post-Demo Conversion", "module": "capabilities/conversion/service.py"},
+      {"id": "034", "name": "Discount Suggestion", "module": "capabilities/discounts/service.py"},
+      {"id": "036", "name": "Demo-to-Paid Transition", "module": "capabilities/paid_transition/service.py"}
+    ]
+  },
+  "tutor_integration": {
+    "boundary": "TutorMatchOrchestrator.match()",
+    "transport": "in_process",
+    "return_only": true,
+    "tutor_may_send": false,
+    "protected_files_modified": 0,
+    "rejected_boundaries": [
+      "POST /internal/v1/handoff (owns Tutor's own FSM; can return reply_text)",
+      "SQS ingress (same path, and asynchronous)"
+    ],
+    "optional_runtime_dependency": true,
+    "fallback": "FakeTutorIntelligence",
+    "compatibility_verified": [
+      "AgentId enums equal",
+      "envelope version and hop budget equal",
+      "every required Tutor envelope field present in Demo's",
+      "trace header sets identical",
+      "orchestrator has no sender, outbox or conversation store"
+    ]
+  },
+  "gates": {
+    "lint": {"command": "ruff format --check src tests && ruff check src tests", "result": "pass"},
+    "type": {"command": "mypy src", "result": "pass", "files": 112, "strict": true},
+    "test": {"command": "pytest --cov=demo_command_center", "result": "pass", "passed": 260, "failed": 0, "coverage_percent": 82.19, "coverage_floor": 80},
+    "contracts": {"command": "pytest -m contract", "result": "pass", "passed": 17},
+    "e2e": {"command": "pytest -m e2e", "result": "pass", "passed": 33},
+    "test_security": {"command": "pytest -m security", "result": "pass", "passed": 87},
+    "security": {"command": "bandit -r src -ll", "result": "pass", "high": 0, "medium": 0, "low": 8},
+    "demo": {"command": "dcc-e2e", "result": "pass", "steps_passed": 30, "steps_total": 30, "final_state": "CONVERTED", "messages_delivered": 7},
+    "doctor": {"command": "dcc-doctor", "result": "pass", "problems": 0},
+    "audit": {"command": "pip-audit", "result": "not_executed", "reason": "needs `uv export` against a project-local environment; this checkout shares the parent venv"},
+    "integration": {"command": "pytest tests/integration", "result": "not_executed", "reason": "needs a live Aurora cluster (DCC_TEST_CLUSTER_ARN); skipped is not a pass"}
+  },
+  "definition_of_done": {
+    "tutor_protected_files_unchanged": true,
+    "eight_capabilities_implemented": true,
+    "single_deterministic_orchestrator": true,
+    "separate_demo_state_and_migrations": true,
+    "tutor_integration_exists": true,
+    "no_duplicate_whatsapp_owner": true,
+    "meta_integration_exists": true,
+    "google_calendar_and_meet_exists": true,
+    "reminders_exist": true,
+    "cashfree_integration_exists": true,
+    "website_gateway_integration_exists": true,
+    "onboarding_handoff_exists": true,
+    "local_full_e2e_passes": true,
+    "unit_and_contract_tests_pass": true,
+    "lint_and_type_checks_pass": true,
+    "no_fake_success_in_production_paths": true,
+    "missing_credentials_are_external_limitations_only": true,
+    "no_git_commit_created": true
+  },
+  "bugs_found_and_fixed": [
+    {"id": 1, "severity": "high", "summary": "A customer with no qualifying discount could never be sent a payment link", "found_by": "make demo"},
+    {"id": 2, "severity": "high", "summary": "A reschedule created a second calendar event instead of patching the first", "found_by": "e2e test"},
+    {"id": 3, "severity": "high", "summary": "The welcome message was suppressed because ownership transferred before the outbox flushed", "found_by": "make demo"},
+    {"id": 4, "severity": "high", "summary": "Cancellation notices were silently swallowed by the terminal-state block", "found_by": "same root cause as 3"},
+    {"id": 5, "severity": "high", "summary": "tutor_ref was erased between turns by a None derived from an absent demo row", "found_by": "e2e test"},
+    {"id": 6, "severity": "high", "summary": "Commands accepted a caller-supplied tutor_ref, bypassing the snapshot check", "found_by": "code path opened while fixing 5"},
+    {"id": 7, "severity": "high", "summary": "Discount bands matched on any trigger rather than all, overpaying every price-sensitive customer by ~5%", "found_by": "unit test"},
+    {"id": 8, "severity": "medium", "summary": "'my son is in class 10' parsed as a demo time", "found_by": "unit test"},
+    {"id": 9, "severity": "medium", "summary": "A Google failure left the slot hold in place for its full TTL", "found_by": "e2e test"},
+    {"id": 10, "severity": "high", "summary": "Every outbound message was blocked: the output guard counted any URL as PII", "found_by": "make demo"},
+    {"id": 11, "severity": "medium", "summary": "NextStep.ADDRESS_OBJECTIONS did not exist; the offline stub would raise AttributeError", "found_by": "mypy strict"},
+    {"id": 12, "severity": "medium", "summary": "A conference with 2+ participants asserted no attendance, losing discount eligibility", "found_by": "make demo"},
+    {"id": 13, "severity": "medium", "summary": "The invisible-character detector held literal bidi characters in source", "found_by": "bandit B613"},
+    {"id": 14, "severity": "low", "summary": "Coverage omit paths were stale and matched nothing", "found_by": "coverage run"}
+  ],
+  "integration_gaps": [
+    {"id": 1, "area": "nxtutors_gateway", "blocking_production": true, "summary": "All eight endpoints unverified; the Laravel package was outside the workspace", "contained_in": "integrations/nxtutors_gateway/client.py::_ENDPOINTS"},
+    {"id": 2, "area": "meta_templates", "blocking_production": true, "summary": "The tutor-confirmation template name is unknown and deliberately not guessed; two others are declared but unverified"},
+    {"id": 3, "area": "onboarding", "blocking_production": false, "summary": "Contract inferred from AgentEnvelopeV1; the receiving route is unconfirmed"},
+    {"id": 4, "area": "lead_intake", "blocking_production": false, "summary": "Shape pinned from the Tutor contract; confirm a null reply_text is tolerated"},
+    {"id": 5, "area": "credentials", "blocking_production": true, "summary": "No live credentials for any provider; wire formats untested above the fakes"},
+    {"id": 6, "area": "persistence", "blocking_production": true, "summary": "Seven of ten aggregates still use in-memory repositories under persistence_mode=data_api"},
+    {"id": 7, "area": "tooling", "blocking_production": false, "summary": "`make` is not installed on the development host; every target's command was run directly"}
+  ],
+  "phase_2": [
+    "Complete the seven remaining Data API repositories",
+    "Verify the Laravel gateway endpoints and response shapes",
+    "Resolve the tutor-confirmation template name and reconcile all six against a WABA export",
+    "Write the Terraform: API Gateway, SQS + DLQ, six Lambdas, Scheduler group, alarms",
+    "Resolve SecretStr settings from Secrets Manager at cold start",
+    "Implement the Google credential provider (service-account JWT or OAuth refresh)",
+    "Build the ops API and console for capability 129",
+    "Load-test contention on dcc_slot_holds",
+    "Refit the forecast coefficients once labelled demos exist and emit forecast.v2"
+  ],
+  "artefacts": {
+    "discovery": "docs/checkpoints/phase-1-discovery.md",
+    "report": "docs/checkpoints/phase-1-implementation-report.md",
+    "protected_baseline": "docs/checkpoints/protected-tutor-baseline.json",
+    "integration_gaps": "docs/integration-gaps.md",
+    "readme": "README.md",
+    "migration": "migrations/0001_dcc_schema.sql"
+  }
+}

@@ -16,6 +16,7 @@ environment locally; `SecretStr` keeps them out of reprs and logs either way.
 
 from __future__ import annotations
 
+import os
 from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
@@ -33,17 +34,26 @@ class Environment(StrEnum):
 
 
 class PersistenceMode(StrEnum):
-    """How this process reaches Aurora.
+    """How this process reaches PostgreSQL.
 
-    `data_api` is the default and the reason the orchestrator Lambda can live
-    outside the VPC and still call Meta, Google, Cashfree and OpenAI without a
-    NAT Gateway. `lambda_proxy` is the documented fallback for a region or
-    engine version where the Data API is unavailable: a dedicated persistence
-    Lambda inside the DB VPC, invoked over the AWS API, which itself makes no
-    internet calls. `memory` is local development and the test suite.
+    `data_api` lets the orchestrator Lambda live outside the VPC and still call
+    Meta, Google, Cashfree and OpenAI without a NAT Gateway. It requires an
+    **Aurora Serverless** cluster with the Data API enabled.
+
+    `postgres_dsn` is for a plain RDS instance, or any database reachable only
+    by connection string — which is what the shared NXTutors database actually
+    is. It uses the same driver the Tutor Intelligence service uses, so both
+    agents talk to one database over one connection style.
+
+    `lambda_proxy` is the documented fallback where neither is possible: a
+    dedicated persistence Lambda inside the DB VPC, invoked over the AWS API,
+    which itself makes no internet calls.
+
+    `memory` is local development and the test suite.
     """
 
     DATA_API = "data_api"
+    POSTGRES_DSN = "postgres_dsn"
     LAMBDA_PROXY = "lambda_proxy"
     MEMORY = "memory"
 
@@ -51,10 +61,32 @@ class PersistenceMode(StrEnum):
 _PLACEHOLDER_PREFIXES = ("replace-with", "changeme", "your-", "xxx", "todo")
 
 
+def _repo_root() -> Path:
+    """The directory holding the shared `.env`.
+
+    Walks up from this file looking for the repository marker rather than
+    assuming a working directory: a Lambda, a pytest run and `make demo` all
+    start somewhere different, and a relative path resolves to nothing in at
+    least one of them.
+    """
+    for parent in Path(__file__).resolve().parents:
+        if (parent / ".env").is_file() or (parent / ".git").is_dir():
+            return parent
+    return Path.cwd()
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="DCC_",
-        env_file=".env",
+        # Both agents share ONE .env at the repository root. Demo and Tutor are
+        # one deployed product; two env files is two places for the database URL
+        # to drift apart, and they must never disagree about which database
+        # they are looking at.
+        #
+        # A local `Demo Intelegence Agent/.env` still wins when present, which
+        # is what makes a developer override possible without editing the
+        # shared file. Later entries take precedence in pydantic-settings.
+        env_file=(_repo_root() / ".env", Path(".env")),
         env_file_encoding="utf-8",
         extra="ignore",
         frozen=True,
@@ -71,10 +103,22 @@ class Settings(BaseSettings):
 
     # --------------------------------------------------------------- aurora
     persistence_mode: PersistenceMode = PersistenceMode.MEMORY
+
+    #: Direct connection string, used when `persistence_mode=postgres_dsn`.
+    #: Falls back to the Tutor Intelligence DSN in the shared `.env` so both
+    #: agents reach one database without the URL being written twice — see
+    #: `_share_the_tutor_database`.
+    postgres_dsn: SecretStr = SecretStr("")
+    postgres_pool_min: Annotated[int, Field(ge=1, le=20)] = 1
+    postgres_pool_max: Annotated[int, Field(ge=1, le=50)] = 5
+    postgres_require_tls: bool = True
+
     aurora_cluster_arn: str = ""
     aurora_secret_arn: str = ""
     aurora_database: str = "demo_command_center"
-    aurora_schema: str = "dcc"
+    #: Demo owns this schema and only this schema. Tutor Intelligence owns
+    #: `tutor_match` in the same database and is never written by this service.
+    aurora_schema: str = "demo_agent"
     #: Invoked only when `persistence_mode=lambda_proxy`.
     persistence_lambda_arn: str = ""
     db_statement_timeout_ms: Annotated[int, Field(ge=100, le=30_000)] = 5_000
@@ -107,6 +151,10 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------ nxtutors
     gateway_base_url: str = ""
+    #: The public site. Distinct from `gateway_base_url` (an internal API): this
+    #: is the only non-provider host a tutor profile link may point at, and the
+    #: outbound guardrail's allowlist is built from it.
+    website_public_base_url: str = "https://nxtutors.com"
     gateway_audience: str = "demo-command-center"
     gateway_source_id: str = "demo_command_center_agent"
     gateway_signing_key_id: str = "v1"
@@ -220,11 +268,22 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------ validation
     @field_validator(
-        "gateway_base_url", "openai_base_url", "cashfree_return_url", mode="after"
+        "gateway_base_url",
+        "website_public_base_url",
+        "openai_base_url",
+        "cashfree_return_url",
+        mode="after",
     )
     @classmethod
     def _strip_trailing_slash(cls, value: str) -> str:
         return value.rstrip("/")
+
+    @property
+    def website_host(self) -> str:
+        """Host only, for the outbound URL allowlist."""
+        from urllib.parse import urlparse
+
+        return (urlparse(self.website_public_base_url).hostname or "").lower()
 
     @field_validator("default_timezone")
     @classmethod
@@ -266,12 +325,84 @@ class Settings(BaseSettings):
             missing.append("gateway_base_url")
         if missing:
             raise ValueError(
-                f"environment={self.environment.value} requires real values for: {sorted(set(missing))}"
+                f"environment={self.environment.value} requires real values "
+                f"for: {sorted(set(missing))}"
             )
         return self
 
     @model_validator(mode="after")
+    def _share_the_tutor_database(self) -> Settings:
+        """Adopt the Tutor DSN when Demo has not been given its own.
+
+        Both agents are one product and one database. Reading `TMM_POSTGRES_DSN`
+        as the fallback means the connection string lives in exactly one place
+        in the shared `.env`, so the two can never end up pointed at different
+        databases by a copy that was updated once.
+
+        Demo still owns a **separate schema** (`aurora_schema`). Sharing a
+        database is correct; sharing a schema would put Demo tables inside a
+        protected Tutor migration history.
+        """
+        if self.postgres_dsn.get_secret_value():
+            return self
+        shared = os.environ.get("TMM_POSTGRES_DSN", "").strip()
+        if not shared:
+            shared = _read_env_value("TMM_POSTGRES_DSN")
+        if shared:
+            object.__setattr__(self, "postgres_dsn", SecretStr(shared))
+        return self
+
+    @model_validator(mode="after")
+    def _share_the_tutor_openai_key(self) -> Settings:
+        """Adopt the Tutor OpenAI credential when Demo has not been given one.
+
+        Same reasoning as `_share_the_tutor_database`, and the same failure it
+        prevents: two copies of one credential drift, and the half that was not
+        rotated fails at the worst moment. One product, one account, one key in
+        the shared `.env`.
+
+        The provider is inherited too. Without that, a blank
+        `DCC_LLM_PROVIDER` leaves Demo on the offline stub while Tutor is on
+        the real model, and objection extraction silently degrades to a
+        heuristic that nobody notices until conversion drops.
+        """
+        if not self.openai_api_key.get_secret_value():
+            shared = os.environ.get("TMM_OPENAI_API_KEY", "").strip()
+            if not shared:
+                shared = _read_env_value("TMM_OPENAI_API_KEY")
+            if shared:
+                object.__setattr__(self, "openai_api_key", SecretStr(shared))
+
+        if not self.openai_base_url:
+            base = os.environ.get("TMM_OPENAI_BASE_URL", "").strip() or _read_env_value(
+                "TMM_OPENAI_BASE_URL"
+            )
+            if base:
+                object.__setattr__(self, "openai_base_url", base)
+
+        # Only promote to the real provider once a key is actually present:
+        # `llm_provider="openai"` with no key fails the deployed-invariant
+        # check, and locally it would raise on the first extraction instead of
+        # degrading.
+        if self.llm_provider == "stub" and self.openai_api_key.get_secret_value():
+            shared_provider = (
+                os.environ.get("TMM_LLM_PROVIDER", "").strip()
+                or _read_env_value("TMM_LLM_PROVIDER")
+                or ""
+            )
+            if shared_provider == "openai":
+                object.__setattr__(self, "llm_provider", "openai")
+        return self
+
+    @model_validator(mode="after")
     def _require_persistence_wiring(self) -> Settings:
+        if self.persistence_mode is PersistenceMode.POSTGRES_DSN and not (
+            self.postgres_dsn.get_secret_value()
+        ):
+            raise ValueError(
+                "persistence_mode=postgres_dsn requires DCC_POSTGRES_DSN, or "
+                "TMM_POSTGRES_DSN in the shared .env"
+            )
         if self.environment is Environment.LOCAL:
             return self
         if self.persistence_mode is PersistenceMode.MEMORY:
@@ -285,7 +416,10 @@ class Settings(BaseSettings):
             raise ValueError(
                 "persistence_mode=data_api requires aurora_cluster_arn and aurora_secret_arn"
             )
-        if self.persistence_mode is PersistenceMode.LAMBDA_PROXY and not self.persistence_lambda_arn:
+        if (
+            self.persistence_mode is PersistenceMode.LAMBDA_PROXY
+            and not self.persistence_lambda_arn
+        ):
             raise ValueError("persistence_mode=lambda_proxy requires persistence_lambda_arn")
         if not self.work_queue_url:
             # Without a queue the webhook would have to do the work inline, and
@@ -346,6 +480,34 @@ class Settings(BaseSettings):
             if self.cashfree_env == "production"
             else "https://sandbox.cashfree.com"
         )
+
+
+def _read_env_value(name: str) -> str:
+    """One value out of the shared `.env`, without importing dotenv.
+
+    Used only for the Tutor DSN fallback. pydantic-settings has already parsed
+    the file for `DCC_`-prefixed keys; this reaches the one `TMM_` key that
+    Demo deliberately shares.
+    """
+    path = _repo_root() / ".env"
+    if not path.is_file():
+        return ""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith(f"{name}="):
+            return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+def asyncpg_dsn(dsn: str) -> str:
+    """Normalise a SQLAlchemy-shaped DSN for asyncpg.
+
+    The shared `.env` holds `postgresql+asyncpg://…?ssl=require`, which is what
+    SQLAlchemy wants. asyncpg wants a bare `postgresql://` URL and takes TLS as
+    a keyword argument, so the driver suffix and query string come off here.
+    """
+    import re
+
+    return re.sub(r"\?.*$", "", dsn.replace("postgresql+asyncpg://", "postgresql://"))
 
 
 def _is_placeholder(secret: SecretStr) -> bool:

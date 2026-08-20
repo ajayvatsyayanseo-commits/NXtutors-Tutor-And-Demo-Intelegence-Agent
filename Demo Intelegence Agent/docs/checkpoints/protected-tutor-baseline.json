@@ -1,0 +1,843 @@
+﻿{
+    "generated_for":  "phase-1 protected-path baseline",
+    "baseline_commit":  "594c7585fdb7ab7b448ed3ea30beec2e18160b9f",
+    "branch":  "main",
+    "protected_prefixes":  [
+                               "src/tutor_match_meta",
+                               "config/policies",
+                               "migrations",
+                               "infra/terraform",
+                               "tests",
+                               ".github/workflows"
+                           ],
+    "file_count":  199,
+    "preexisting_uncommitted_changes":  [
+                                            " M \"Demo Intelegence Agent/.gitignore\"",
+                                            " M \"Demo Intelegence Agent/Makefile\"",
+                                            " M \"Demo Intelegence Agent/config/policies/discount.v1.yaml\"",
+                                            " M \"Demo Intelegence Agent/config/policies/forecast.v1.yaml\"",
+                                            " M \"Demo Intelegence Agent/config/policies/monitoring.v1.yaml\"",
+                                            " M \"Demo Intelegence Agent/config/policies/reminder.v1.yaml\"",
+                                            " M \"Demo Intelegence Agent/pyproject.toml\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/__init__.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/config/__init__.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/config/policies.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/config/settings.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/contracts/__init__.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/contracts/common.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/contracts/envelope.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/contracts/events.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/observability/__init__.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/observability/logging.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/observability/metrics.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/security/__init__.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/security/guardrails.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/security/pii.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/security/rate_limit.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/security/signatures.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/security/urls.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/shared/__init__.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/shared/clock.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/shared/ids.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/shared/money.py\"",
+                                            " M \"Demo Intelegence Agent/src/demo_command_center/version.py\""
+                                        ],
+    "files":  {
+                  "src/tutor_match_meta/matching/__init__.py":  {
+                                                                    "worktree_sha256":  "3b11dda72445e4bc506a59c43c3280f23f0dcd8926e694b496f8d4ef5fc7afc4",
+                                                                    "head":  "d5d99c21c05a564eb68f8879938b03306bb92312"
+                                                                },
+                  "migrations/versions/0003_hardening.py":  {
+                                                                "worktree_sha256":  "3b5478435d880c3ffea09d183bcec0ca6308fa7283aeb4be5b3e83583a95048f",
+                                                                "head":  "17378a27df9d711de3db644a9f6ef555b2bcb280"
+                                                            },
+                  "src/tutor_match_meta/contracts/outbound.py":  {
+                                                                     "worktree_sha256":  "e1748d475679d0315dc166d8d2909cda073bf7cab429eb24ff52da0ff7417e79",
+                                                                     "head":  "74bb233e41f3146eb7c93930c2c40f2a73484cb2"
+                                                                 },
+                  "src/tutor_match_meta/config/kill_switches.py":  {
+                                                                       "worktree_sha256":  "08736b6d7c87515b83f8fcfb2ea595ae2a04684aeb5c8d140f64677a46ce9afc",
+                                                                       "head":  "fab2ffa5a8e162a4ae0d398c464650c17822f59e"
+                                                                   },
+                  "tests/e2e/test_multi_agent_harmony.py":  {
+                                                                "worktree_sha256":  "beb7b2d7b2254455c509deaa8bbd4ba0c31020d92056896c70599bd495995cf4",
+                                                                "head":  "2737a689f78dab0ae9af8b9b0c3af96f56280250"
+                                                            },
+                  "config/policies/home_tuition.v1.yaml":  {
+                                                               "worktree_sha256":  "778dc4c520011b27be64e301114d4226578239a330013e083860c359745b50ab",
+                                                               "head":  "e2ada23c2938f5ae325b02747101988e343b0300"
+                                                           },
+                  "tests/contract/test_website_feed_contract.py":  {
+                                                                       "worktree_sha256":  "6bd7002a0b50abaa8b884609d3abc7b25bb569070fc7a3a41a9387e33030ff77",
+                                                                       "head":  "0e1f9f29e189b73ee4de3e60816ff71cb1b86a86"
+                                                                   },
+                  "src/tutor_match_meta/repositories/ports.py":  {
+                                                                     "worktree_sha256":  "b1d6589dc66095fa1becb95b1a42bf8db5bd90d664d5af54590fc368f22db718",
+                                                                     "head":  "d33fe2b6c1795b68117295f26903b6f6ee3fd5f4"
+                                                                 },
+                  "src/tutor_match_meta/orchestration/routing.py":  {
+                                                                        "worktree_sha256":  "34a8a7fe6b6b3f8f5c87581ed8e8d68e708fbfd7553e89bfd1383245dff4fe85",
+                                                                        "head":  "0a04a2429eee9dba88ed042bce49fc8de988b41f"
+                                                                    },
+                  "src/tutor_match_meta/orchestration/evidence_guard.py":  {
+                                                                               "worktree_sha256":  "c76b70ba7830b1e8f02581fcd3a6c460bdbb45ac589ef040d5474562482eda33",
+                                                                               "head":  "64092920831caf85bbb7f4df0e758ae2981583b1"
+                                                                           },
+                  "src/tutor_match_meta/integrations/whatsapp/__init__.py":  {
+                                                                                 "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                                 "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                             },
+                  "tests/contract/test_outbound_delivery.py":  {
+                                                                   "worktree_sha256":  "9792e74c3f306bbd87939898496455c4880fe512fadfa0021d668a5e8cd168c8",
+                                                                   "head":  "fef81e10e35213a8a07f72749dbf81e4f2d86fb8"
+                                                               },
+                  "src/tutor_match_meta/domain/text.py":  {
+                                                              "worktree_sha256":  "28dd787f2f2a7587700952434456fff38bfad3a32a1c83bfbcc061f5f7d728b1",
+                                                              "head":  "2ea3306f2711edcaaede3b66a7413002bac1ff3d"
+                                                          },
+                  "src/tutor_match_meta/matching/performance/__init__.py":  {
+                                                                                "worktree_sha256":  "668025247a96b5d5c41ce4609d8f5edbeb52a0d6b3407644eb484c4e16483e50",
+                                                                                "head":  "96a9ee2e4556ec0bd6d0e8075057eceaf44031f4"
+                                                                            },
+                  "src/tutor_match_meta/config/__init__.py":  {
+                                                                  "worktree_sha256":  "f425ffea28bace4491997d3e525799aaabfe8107956cc51912be092bd3d3bb47",
+                                                                  "head":  "472940f6cc4c0da29adda124fd07d0da72561b91"
+                                                              },
+                  "src/tutor_match_meta/security/pii.py":  {
+                                                               "worktree_sha256":  "3594fc275b6f4e5b8982313b542382ee46cda26b0371e23570df757c0699d467",
+                                                               "head":  "fe02b73b92033e1cf7fdfb3bcc552595cf2248ac"
+                                                           },
+                  "src/tutor_match_meta/integrations/llm/routing.py":  {
+                                                                           "worktree_sha256":  "f251839dc391c1b7ad6058e3cae8da5d784da7ed7672adcdcaeb55705c853eb4",
+                                                                           "head":  "4d00c2e300c6e6a010929e947d16538aed52c11b"
+                                                                       },
+                  "src/tutor_match_meta/api/internal.py":  {
+                                                               "worktree_sha256":  "0bbe7a02d4d04b019423a0a7eecdabb4866070f2f19876c2166c9e39aeacceb4",
+                                                               "head":  "854705722d2bab6d504e3a8e3f7e8816c24432e6"
+                                                           },
+                  "src/tutor_match_meta/matching/personality/evidence.py":  {
+                                                                                "worktree_sha256":  "110bcf07d8c0a73192ce90b46b0387c671f23b59fe91f97f303c7ec8e2ec17e9",
+                                                                                "head":  "0f3bc587ba0e991e754411a7ee322200ed0deb46"
+                                                                            },
+                  "src/tutor_match_meta/matching/subject_expertise/__init__.py":  {
+                                                                                      "worktree_sha256":  "2a630e020f84d642a6c00de278ffe5ea9c246b416605cb5210f90498a7065726",
+                                                                                      "head":  "22d5f0861d67ec62a3049125dcf7f9a7a11f97ef"
+                                                                                  },
+                  "src/tutor_match_meta/integrations/chitragupta/client.py":  {
+                                                                                  "worktree_sha256":  "c92649eee833e41c059508eaa53d35711a5277849b7d0ebb75995122828f59a0",
+                                                                                  "head":  "8337fe12f1bc55ec80367adf81347e317b5ded7d"
+                                                                              },
+                  ".github/workflows/ci.yml":  {
+                                                   "worktree_sha256":  "b02d56239f63ac022476549d98e5b5903866e39426d36d35c3f3e8edeb28c84a",
+                                                   "head":  "77eada73479b70e3ab123653995a0af81b66a5a5"
+                                               },
+                  "src/tutor_match_meta/scoring/__init__.py":  {
+                                                                   "worktree_sha256":  "025412635e7d5f49c23ca1d22f84cd71b1a6447638517e07ae43fa71cf600e47",
+                                                                   "head":  "40c03778722c72a0eb1c37536a522168b6ee76f9"
+                                                               },
+                  "src/tutor_match_meta/scoring/policy.py":  {
+                                                                 "worktree_sha256":  "d09c536951bd605527b18995fffea371fde788bbc379f319e66b139d7911bb65",
+                                                                 "head":  "94a121061a213faaecbfb84018b8948b3e0da865"
+                                                             },
+                  "src/tutor_match_meta/config/settings.py":  {
+                                                                  "worktree_sha256":  "f346a2204b18d6f8c6c618f2ea5ceedd98d0195ed9deb6043d44693804229e87",
+                                                                  "head":  "8822c241a76b2da211e4e13727366b66e734ea23"
+                                                              },
+                  "src/tutor_match_meta/orchestration/output_guard.py":  {
+                                                                             "worktree_sha256":  "7fefc9416bc575732f1859ee902538a08821f082379e7389ba6cf4a8ed2fbae2",
+                                                                             "head":  "dfafb31baaf133fbb38b21e4295f2575cfa4156c"
+                                                                         },
+                  "infra/terraform/outputs.tf":  {
+                                                     "worktree_sha256":  "6f3559b738a7556602e8075ca3fa198f6e676a1d93250a695c876a9bf8382a9f",
+                                                     "head":  "423d5c45d45015cb32158821f1bfc1dc36ec35ab"
+                                                 },
+                  "src/tutor_match_meta/domain/localities.py":  {
+                                                                    "worktree_sha256":  "7142f122111dfb074e3c5609e8a44ac7cec6c2876072b08e0d5d2677036e7cca",
+                                                                    "head":  "89565ece72ca8e3770c6bcf981c08b7a2053ae7c"
+                                                                },
+                  "src/tutor_match_meta/matching/proximity/evaluator.py":  {
+                                                                               "worktree_sha256":  "25c6bfd5feb11de0b498598fe23ff66b7a77de794f1f37b49744e0913abe1ff3",
+                                                                               "head":  "f2dc2e9070df5af1eab8f9dde55e0c957a54ba9c"
+                                                                           },
+                  "src/tutor_match_meta/orchestration/enrichment.py":  {
+                                                                           "worktree_sha256":  "334029940d5d5bf81f03d859b5b87f5946dbb1c30386e5f8506f9e05d48e5c5d",
+                                                                           "head":  "dfeed88c68fa0db6af701a661dd375528638abae"
+                                                                       },
+                  "tests/e2e/test_split_pipeline.py":  {
+                                                           "worktree_sha256":  "cd78f71d0468401be3c0d02ccb95aab3d3fc5fcc9089aa422f92a59c1b5afc57",
+                                                           "head":  "65ee31702534e25e2c0a74b5827bee8449d862ba"
+                                                       },
+                  "src/tutor_match_meta/sync/projection.py":  {
+                                                                  "worktree_sha256":  "e5842e07094b8556419b89713063713aa822c8ec14abd921af1a9ec10444e2dc",
+                                                                  "head":  "848e85ccc706f2b8920ff8aeaff7010a798e4f0a"
+                                                              },
+                  "tests/unit/test_schema_check.py":  {
+                                                          "worktree_sha256":  "4530bc016c618af97f56c2687bbd664a8cbf38832ca2f77113a43f46a31b8591",
+                                                          "head":  "e3b9f0942ce0a82789f486f692dcbe727783c891"
+                                                      },
+                  "src/tutor_match_meta/config/flags.py":  {
+                                                               "worktree_sha256":  "c4677d7b00817fac5038b281a1c3fa5073ff0cb482d52b3d60c1cbea7ef2d980",
+                                                               "head":  "92753397468d620a7e184a69899c63b848340ff6"
+                                                           },
+                  "infra/terraform/variables.tf":  {
+                                                       "worktree_sha256":  "3c5fc772715bc2e132b883c6f7145c71e2f304759db0ff6b7e2567519eb3a43a",
+                                                       "head":  "2b4cb82aca00af072d01a7e92405f14b6ac84ec3"
+                                                   },
+                  "src/tutor_match_meta/integrations/llm/__init__.py":  {
+                                                                            "worktree_sha256":  "ef9c5961ae9b8a576e1bcc9e9e2d437385e1bb513baa3f0406f35bd23db6ba8f",
+                                                                            "head":  "50496f82caf135b4c41f3f32b959ca79e5b96ffb"
+                                                                        },
+                  "migrations/env.py":  {
+                                            "worktree_sha256":  "6a7c80b92ee551b75f99689e595833e341dc5804dd574aac4434ec6c1d7498f7",
+                                            "head":  "2fc272bd719c4da3e55007c5d2249002f0d41630"
+                                        },
+                  "src/tutor_match_meta/domain/modes.py":  {
+                                                               "worktree_sha256":  "c00ef3923d375bc6a2e792452430ed8990743e641daf0cfd9259a1b2e3173fc1",
+                                                               "head":  "66a9b57fc7a89f38f5e3b176407c3ca0f376f25c"
+                                                           },
+                  "migrations/versions/0005_tutor_name_search.py":  {
+                                                                        "worktree_sha256":  "88b66e2d1b554da5cf61e49229ae3ee1b165420210c46eef5169f265d5ee2075",
+                                                                        "head":  "9f9b2ac4c05e5e920883fa56d8ce830e9228c9b7"
+                                                                    },
+                  "tests/security/test_ingress.py":  {
+                                                         "worktree_sha256":  "cac04708ecfa23cd94ed7373c58c876c44ef7d2fcf7c47792eff2a4d584ab7e7",
+                                                         "head":  "8f0e60608e0b185b6135f91d67ad423bd9b62a8a"
+                                                     },
+                  "src/tutor_match_meta/orchestration/extraction.py":  {
+                                                                           "worktree_sha256":  "283747130d66c85a7258ec9d18756a038b6a3e31243cf316473299a53c34607a",
+                                                                           "head":  "d97aee09fc69f5744e074c384f5511161e987d24"
+                                                                       },
+                  "tests/contract/__init__.py":  {
+                                                     "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                     "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                 },
+                  "src/tutor_match_meta/version.py":  {
+                                                          "worktree_sha256":  "2e8d4031a580ebff3ba5510baa82f56eca0dfea242cb9912fd2fea99c8e7ee09",
+                                                          "head":  "6b52c26c767bbe33cd7da7958e0f78303c3d0861"
+                                                      },
+                  "src/tutor_match_meta/state/machine.py":  {
+                                                                "worktree_sha256":  "bbfb3b74a365c6ba396ef71131637bd363765782ed11999d64aa698df4794e2c",
+                                                                "head":  "f192bc47442c7635cd52ab086d75da45ee8b0bf6"
+                                                            },
+                  "src/tutor_match_meta/matching/personality/__init__.py":  {
+                                                                                "worktree_sha256":  "5190c68f6715281631e392d3e2040a1c9ef7abd82aba379ec986b684902a8baf",
+                                                                                "head":  "2371bc16b00ce6d1c869a2a2f10d1f8de215f416"
+                                                                            },
+                  "src/tutor_match_meta/orchestration/explanation.py":  {
+                                                                            "worktree_sha256":  "b248cfd6c3f1c944a9117cbfe2a101d95d131c2ec2fc2916bb95af70e9ab6bba",
+                                                                            "head":  "765690e20081bae82d901f083c72a644f432aa4a"
+                                                                        },
+                  "src/tutor_match_meta/cache/postgres_store.py":  {
+                                                                       "worktree_sha256":  "a2f31f361538d9334343e57b30846688758d83d36e5fd845be198a9dd47c940c",
+                                                                       "head":  "b78b69d8397822443c4d4360d543c7711c14ddcf"
+                                                                   },
+                  "tests/security/test_sql_injection.py":  {
+                                                               "worktree_sha256":  "d87da92035865df1bd7da1c3034ccd2236c23f27d644a1f889156da3b451dc0e",
+                                                               "head":  "21d80dff76970a818acda1fdeefd45ab451cdf7a"
+                                                           },
+                  "src/tutor_match_meta/cache/__init__.py":  {
+                                                                 "worktree_sha256":  "dbd7632fa143ffa2c10b848d54040fb8dc0b8ced705295b29cd081ef5c372695",
+                                                                 "head":  "53a23acf8d6b3c0c6981f03a6cea57983cf9a746"
+                                                             },
+                  "tests/security/test_network_boundary.py":  {
+                                                                  "worktree_sha256":  "4286da0f261180db4cd8a9590422fab908588bb3c478d7f1b6eba8f58f36525b",
+                                                                  "head":  "a875b278ee78584d17cea4c4549aee44946db23f"
+                                                              },
+                  "tests/conftest.py":  {
+                                            "worktree_sha256":  "c7200f1830ad8f99ba711aa26db31e6d33ef280d637524931bad98a13c3dea9c",
+                                            "head":  "0e7e56d9acf5b6ea00ae54860320e6ee5f8e94e8"
+                                        },
+                  "tests/integration/test_postgres_stores.py":  {
+                                                                    "worktree_sha256":  "6a48b0251bc5648ba069e8e3aaa0d28f5298f1f558fb77cc25af7ac4679431b7",
+                                                                    "head":  "3b7507bc4c02f652d8d2be4e67195c4729f2d5cb"
+                                                                },
+                  "src/tutor_match_meta/repositories/cached_tutors.py":  {
+                                                                             "worktree_sha256":  "8b564200fbf795b7ca318a4a507aae26685aa212b0a1aba68ea38b16d4197db7",
+                                                                             "head":  "6353ffa40a6c7de09e4a4805614df67b5680cbbc"
+                                                                         },
+                  "tests/unit/test_rag.py":  {
+                                                 "worktree_sha256":  "47c89297718e2c0028a5c3f68a7b640f126e26819468984b27c146383bd6e893",
+                                                 "head":  "ea4b476cdf0fbffb2607c5a4eade1fc35ae86e34"
+                                             },
+                  "src/tutor_match_meta/state/__init__.py":  {
+                                                                 "worktree_sha256":  "616cef1dc0153389f6d62b5127e2ae39d800d232136a2d368ea6666095800f55",
+                                                                 "head":  "6c47d91e6440d5ecb622daf5cfdd2239df04cdbc"
+                                                             },
+                  "src/tutor_match_meta/matching/personality/evaluator.py":  {
+                                                                                 "worktree_sha256":  "ebdc7cee26cc956d459dfd68a858243457295cb94071ac4659dd907378737440",
+                                                                                 "head":  "d9c2e744c29f70591d55813b28a814285219fb67"
+                                                                             },
+                  "src/tutor_match_meta/integrations/llm/openai_provider.py":  {
+                                                                                   "worktree_sha256":  "83148106c61747133b7d656604170c8bdcc821528d77c7af68767c629dff86b0",
+                                                                                   "head":  "604cc758570dabae18a5313b9c79502b1fba0d3b"
+                                                                               },
+                  "tests/load/locustfile.py":  {
+                                                   "worktree_sha256":  "3a43e8df0fcd7e1e536779d276a40e7d6dc0ba5002af7fa3c5806848af761786",
+                                                   "head":  "c0a97b0125577bea665c700e18bd6af0ba7fbc7b"
+                                               },
+                  "src/tutor_match_meta/integrations/agents/__init__.py":  {
+                                                                               "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                               "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                           },
+                  "src/tutor_match_meta/contracts/tutor.py":  {
+                                                                  "worktree_sha256":  "d426a8e05ed718549ed1fd44cc0d7001a64ae7aa16e4e1723c13f995131bc983",
+                                                                  "head":  "84dd0d283664eaac1d6363aca7493be5c8027666"
+                                                              },
+                  "tests/e2e/__init__.py":  {
+                                                "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                            },
+                  "src/tutor_match_meta/domain/__init__.py":  {
+                                                                  "worktree_sha256":  "4920f5e85741d05e22215c4515e1de19c445ddda1f2c3b916291f43e94702829",
+                                                                  "head":  "91edae420508a07f3ac043c4f975fc4776f6313e"
+                                                              },
+                  "src/tutor_match_meta/cli/__init__.py":  {
+                                                               "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                               "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                           },
+                  "src/tutor_match_meta/sync/__init__.py":  {
+                                                                "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                            },
+                  "tests/unit/test_domain_parsing.py":  {
+                                                            "worktree_sha256":  "16a2793b1d37f669b35645b71ea250d89170b057ba9d5f405e22d1cc35e58b08",
+                                                            "head":  "863aebd091f644671c347633b13a603796c1530a"
+                                                        },
+                  ".github/workflows/deploy.yml":  {
+                                                       "worktree_sha256":  "f76cb95e0c4ffe668c208690689432ceee6fef38a305808d54bda73c18408c48",
+                                                       "head":  "32792bda0077995ef5a6bc18c394167678c8ef41"
+                                                   },
+                  "src/tutor_match_meta/sync/retention.py":  {
+                                                                 "worktree_sha256":  "7f89342744fd9c93b4a51e149c546374344f2d8124d4151796c6f12c170db56b",
+                                                                 "head":  "184282d7eebb187e616c4de231e944b7958cf474"
+                                                             },
+                  "src/tutor_match_meta/repositories/__init__.py":  {
+                                                                        "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                        "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                    },
+                  "migrations/versions/0002_shared_store.py":  {
+                                                                   "worktree_sha256":  "3a43087922a403a81cd16a1060f8af229c77745c204565e68f3199b060605ace",
+                                                                   "head":  "4cde32180d973fbe223e049425396083002801ad"
+                                                               },
+                  "src/tutor_match_meta/bootstrap.py":  {
+                                                            "worktree_sha256":  "54c0d046931fe62174d78b847d9fe982398c2896427b9b2d2b80cb8d17bd8d9e",
+                                                            "head":  "fa31a357e54320e16d42f53f84d058cbfcaca401"
+                                                        },
+                  "infra/terraform/.terraform.lock.hcl":  {
+                                                              "worktree_sha256":  "cb9e4f080b764291457acd6f993104c516f8b0f630ee6368e6310d03c1c3a11d",
+                                                              "head":  "1393fa31159a749c85dbae8039123726a2f35243"
+                                                          },
+                  "src/tutor_match_meta/orchestration/turn_service.py":  {
+                                                                             "worktree_sha256":  "f90ad0aece670a5e85310054e6e7f79867a67e19a39884cf41352d3a7e0b1d94",
+                                                                             "head":  "c239ab0c34446f8a5f40de411d9b5515d0e72592"
+                                                                         },
+                  "src/tutor_match_meta/contracts/enrichment.py":  {
+                                                                       "worktree_sha256":  "a6720b9ffd10aac590ead87c3e359a579107a3be974dd7b724e948f48a83e7f6",
+                                                                       "head":  "23b64b6b8edd6d168a8ae1ed8bb72056c42c446b"
+                                                                   },
+                  "tests/load/__init__.py":  {
+                                                 "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                 "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                             },
+                  "src/tutor_match_meta/observability/__init__.py":  {
+                                                                         "worktree_sha256":  "22a189636dfe015c7b5279bea763b6f43ece84fd71bbd1065b81ceb164a63df1",
+                                                                         "head":  "5c38f17b9ddfe32e1c99cd79a95125f3818a7af2"
+                                                                     },
+                  "src/tutor_match_meta/repositories/postgres.py":  {
+                                                                        "worktree_sha256":  "2882a66887163cd14fda5358f83967340727132e1050da939f4f06b249bb0b24",
+                                                                        "head":  "8c5c869524e37103760c8bd141dc602382102df7"
+                                                                    },
+                  "infra/terraform/versions.tf":  {
+                                                      "worktree_sha256":  "0fb51e12eb44b477da705b4c278f187739aef1619fa9b9aca2aa1b0100d203bc",
+                                                      "head":  "0385e2da0cc8a19077f8c0129f835a5cd951efc4"
+                                                  },
+                  "src/tutor_match_meta/matching/availability/evaluator.py":  {
+                                                                                  "worktree_sha256":  "2a3da65c08478830a461a83d867e71f0bd3a181f47d5a6cd2c9a4c085357325a",
+                                                                                  "head":  "7335228b09405b24d5a7b5443919ee1ae2d4b164"
+                                                                              },
+                  "src/tutor_match_meta/api/app.py":  {
+                                                          "worktree_sha256":  "a6b7c43945791c9bdefa6088e3c9eee11a5929616fd1ea02bc447bca65370295",
+                                                          "head":  "fdbd6f0e9a04783be30b80acb9c7ae962463eab6"
+                                                      },
+                  "src/tutor_match_meta/api/__init__.py":  {
+                                                               "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                               "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                           },
+                  "src/tutor_match_meta/matching/proximity/__init__.py":  {
+                                                                              "worktree_sha256":  "c32acb8895c9b62370a484c99ef0204524a5d37878b8a336b7b33e25d682ed59",
+                                                                              "head":  "40ee483f14d8bf243bff40f2bb4bd18c2fd85d6f"
+                                                                          },
+                  "tests/contract/test_internal_api.py":  {
+                                                              "worktree_sha256":  "aaac7607f31128b8b93875f185378cf6d3a049eca693211df7e2523b8fa76498",
+                                                              "head":  "a8e138cabfa52a736085d5b600bcc9b2c4302458"
+                                                          },
+                  "src/tutor_match_meta/orchestration/__init__.py":  {
+                                                                         "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                         "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                     },
+                  "src/tutor_match_meta/domain/reviews.py":  {
+                                                                 "worktree_sha256":  "fcc8156b7298d865932246806aeade4673387ae9a26660cc3524d5fe4f06d971",
+                                                                 "head":  "2bab701d9174384e847b1fcc3cb1be1d38d14744"
+                                                             },
+                  "tests/security/test_output_guard.py":  {
+                                                              "worktree_sha256":  "f2738eef27c4df29967c9d9e2fb1a1fd1535a670df582143f4a732a9021fe1e2",
+                                                              "head":  "aa3e8dbbc0c7ec851c4a2e9f52e4f87e6447b2e4"
+                                                          },
+                  "tests/security/test_invariants.py":  {
+                                                            "worktree_sha256":  "ff766768a1b380a01b1c4255fe4d52f9ffb54b07372f49c5696394a67fb6c522",
+                                                            "head":  "79f2672b0e71caeb2dec7630c986648951edb6ba"
+                                                        },
+                  "src/tutor_match_meta/matching/replacement_risk/evaluator.py":  {
+                                                                                      "worktree_sha256":  "ad7ed5a36ff00a916485f04247854e3a5819807d5401a8358f78d4f116f845a4",
+                                                                                      "head":  "66dc8b462b4b2fc350c9ce702707dcedccc54c86"
+                                                                                  },
+                  "src/tutor_match_meta/analytics/__init__.py":  {
+                                                                     "worktree_sha256":  "ad19dd3b18faa2531370074c0ae0de8d6b3cfcfdd82108b1c52081fb19c2718e",
+                                                                     "head":  "50ebb81251abdb51e54df96ca1c5a65b5e722d7a"
+                                                                 },
+                  "config/policies/online_tuition.v1.yaml":  {
+                                                                 "worktree_sha256":  "b5c5ad84afb21fc092e4e72a436780c18678f15e22256b8682a888e209041539",
+                                                                 "head":  "72c87788e6d3c0b1d217579b202b0e12557269c8"
+                                                             },
+                  "src/tutor_match_meta/orchestration/orchestrator.py":  {
+                                                                             "worktree_sha256":  "6dc246a3625545a6b95b5eb05a473047a1dbd59535e31de9995a3c5e3193d862",
+                                                                             "head":  "2eaf0ca5634f815ad94aedb4c233fff952bc9589"
+                                                                         },
+                  "src/tutor_match_meta/scoring/selector.py":  {
+                                                                   "worktree_sha256":  "0d1023e9b7ffe1d2ec222826131a0feb55277d2f405ec79ab41c227e9c8ff68f",
+                                                                   "head":  "ad7dbc9fdc98b0cabf2b9d08611a4e0dda450692"
+                                                               },
+                  "migrations/versions/0004_case_insensitive_indexes.py":  {
+                                                                               "worktree_sha256":  "4d126a9d6e85f19135525316d3298d1d252e671508d3543df464b02352598be5",
+                                                                               "head":  "fe1e411e81f8b1bdb9f620379a9573c8ccad8eeb"
+                                                                           },
+                  "config/policies/urgent_tuition.v1.yaml":  {
+                                                                 "worktree_sha256":  "8e48ca1b9aee1e6fa8a126e752cb9957f9e9a42f6f6fa520712271ef768b20e0",
+                                                                 "head":  "ecb21b38ec8133b6958a9d528d5887a4309cae99"
+                                                             },
+                  "src/tutor_match_meta/cli/local_e2e.py":  {
+                                                                "worktree_sha256":  "82209a8fa5d2fb9636188d0ca4982b8c639fedbb6d7e48d1780269258edba465",
+                                                                "head":  "533e129958120885c516cb9fc1edbeec59db060e"
+                                                            },
+                  "infra/terraform/endpoints.tf":  {
+                                                       "worktree_sha256":  "964e702f082906b38229dda0dc0df703c7e6576343db5277ee201e166fc8b581",
+                                                       "head":  "7cad10d1d25558f6be62fc9d9cfa86b6d386489f"
+                                                   },
+                  "config/policies/_base.yaml":  {
+                                                     "worktree_sha256":  "69d6fde3593153b669f845b0fb6a95de29100bda8d65dde668a67367b4889875",
+                                                     "head":  "773da10221765028fd0dab8b91efd95fcd939967"
+                                                 },
+                  "config/policies/competitive_exam.v1.yaml":  {
+                                                                   "worktree_sha256":  "4d7dcd80f4b30668a389e9df5645050dc5c88a961056972a5ce8e9a8fc821579",
+                                                                   "head":  "736991acf556d2fc1d82749f8ddc50cf9c7a952f"
+                                                               },
+                  "src/tutor_match_meta/integrations/__init__.py":  {
+                                                                        "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                        "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                    },
+                  "src/tutor_match_meta/integrations/chitragupta/__init__.py":  {
+                                                                                    "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                                    "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                                },
+                  "src/tutor_match_meta/fixtures/tutors.py":  {
+                                                                  "worktree_sha256":  "73e4d22ddf937fb18d88f5419b5dfd156fd5a80e11b14b3a3a1fc986073aa55f",
+                                                                  "head":  "7f7edd2fcce909495b39e2bc4464b79bca2f9574"
+                                                              },
+                  "config/policies/regular_school_support.v1.yaml":  {
+                                                                         "worktree_sha256":  "cfb062a32e84f0b26562575dcd94b1ee88ed2424f99915d9de1a682d699d2873",
+                                                                         "head":  "352a6d6222a130efd24068793cc8a1f98a0c6b58"
+                                                                     },
+                  "src/tutor_match_meta/integrations/website/commands.py":  {
+                                                                                "worktree_sha256":  "dc3799d573feed03dd6f06a97adc53830e7fc77ff5db6fd795ad2f2a00bea0cd",
+                                                                                "head":  "5b1408ad1ebeb45550a699b4bd644e474ab23b51"
+                                                                            },
+                  "src/tutor_match_meta/matching/performance/evaluator.py":  {
+                                                                                 "worktree_sha256":  "08bd38826d78aaa0c4ebbd8ff96c37daa35c953c18f58400d1dbaaf53192e901",
+                                                                                 "head":  "75c2adc461ac8f4af4287154c6e40dbe1e52dd9c"
+                                                                             },
+                  "src/tutor_match_meta/integrations/llm/provider.py":  {
+                                                                            "worktree_sha256":  "ae0ba6463bec2f6c2cf786ba43a9d43cec4f1393cbcd32c22d02d8f8232fff58",
+                                                                            "head":  "e55119787f91fdb24e6b804113e945cabe5a5e48"
+                                                                        },
+                  "tests/e2e/test_resilience.py":  {
+                                                       "worktree_sha256":  "f7898c06459d930a8c72074626197479bcf92871a9542f7de4d712d611cfc4a7",
+                                                       "head":  "9171f3a6023ee1aecf4e985ade816ae2c7b24221"
+                                                   },
+                  "config/policies/board_exam_prep.v1.yaml":  {
+                                                                  "worktree_sha256":  "b90a6000e5871805044adb8790cc013b93840c60fcc611b5e1d706dc2bfa61d9",
+                                                                  "head":  "d3121dfecdaba4eb926ba7cb71cc938c81a8c114"
+                                                              },
+                  "src/tutor_match_meta/domain/scheduling.py":  {
+                                                                    "worktree_sha256":  "b5b70b1ddb5f9b7b5f5bca57667b089f6ec51600de1556019f8f74351c9d94b0",
+                                                                    "head":  "7ff0e2762a52038057ef0da8c7f12331801d44bf"
+                                                                },
+                  "src/tutor_match_meta/sync/feed_staging.py":  {
+                                                                    "worktree_sha256":  "1e8d51fbde8cf4f65cdaa9528c79e1fc063bea34999843e539e771baf6575fa8",
+                                                                    "head":  "d60d67e0d3a53aff12e041d1c77ac4e73f42c2bc"
+                                                                },
+                  "src/tutor_match_meta/analytics/events.py":  {
+                                                                   "worktree_sha256":  "63f4882afae074d58f3197ca1b184ed5a5278fe812d9e44ae507d7467055b68e",
+                                                                   "head":  "88ac6b04194ffac7b6fdabe9537290fb1d72a6e6"
+                                                               },
+                  "src/tutor_match_meta/prompts/extraction.py":  {
+                                                                     "worktree_sha256":  "729e376d924671fd01ad11cf454a4070198240a715d6835457cff4844396c729",
+                                                                     "head":  "0fae53508cf67c4a7a37a4b2473069b92c2c0f85"
+                                                                 },
+                  "src/tutor_match_meta/rag/pipeline.py":  {
+                                                               "worktree_sha256":  "42c184cfccfab2a8caf3a7d1b4ee8d0339b0098f030b5d2546703e0cb74cb31d",
+                                                               "head":  "87ff06ad03cac333557c78b45e342605728e5b4c"
+                                                           },
+                  "src/tutor_match_meta/integrations/agents/graph.py":  {
+                                                                            "worktree_sha256":  "222b7608bc0756852d1a8270e86ed986e7f5212572074191022fdeb78e764de5",
+                                                                            "head":  "51ae27be781f45b6aa03b920b449f4c3d93e01d2"
+                                                                        },
+                  "src/tutor_match_meta/contracts/events.py":  {
+                                                                   "worktree_sha256":  "e9962b565907ddc56c8e3c8816af37405e2c83e78f4bf208ec2af3cfad911f22",
+                                                                   "head":  "5bcc5fc725d968eb384cd887965c2493fed5e67c"
+                                                               },
+                  "migrations/versions/0001_initial_schema.py":  {
+                                                                     "worktree_sha256":  "0e95841fedbd410ed4a4bf1dc7c7a07155cc329cabd90e74526a895541fe2d5e",
+                                                                     "head":  "fd40179907b7bc93f6597860f2cbebfa8f3f94d7"
+                                                                 },
+                  "src/tutor_match_meta/orchestration/missing_info.py":  {
+                                                                             "worktree_sha256":  "918364ae67e8064056e6c026a5852c7cc1fc439dfe37786635a2e42c282d28cf",
+                                                                             "head":  "e908042a5bdb65365f98ea5ae6510bd6d4d3f80e"
+                                                                         },
+                  "src/tutor_match_meta/contracts/__init__.py":  {
+                                                                     "worktree_sha256":  "9056f5e6b1b5059af63a48c420e6fceca702e33e3e7933fe1e31270e8058d541",
+                                                                     "head":  "63e4f29c6a6272e7b4f32d758919f142fb988e97"
+                                                                 },
+                  "src/tutor_match_meta/contracts/envelope.py":  {
+                                                                     "worktree_sha256":  "46634eba7b0ad00bdb6eceae4b68a49cebda463711cadaa8635c0bfe1c1d51b2",
+                                                                     "head":  "b49dcd04eee2e0f2ce0eadfb6448a5ae0eb801d6"
+                                                                 },
+                  "src/tutor_match_meta/__init__.py":  {
+                                                           "worktree_sha256":  "f318d3ba8f3eced46f15ea92071ded41366643e76a989308dff9ff38129c8704",
+                                                           "head":  "7e8a3564e2a63a21052ec6909828338e7b084d2f"
+                                                       },
+                  "tests/__init__.py":  {
+                                            "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                            "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                        },
+                  "src/tutor_match_meta/security/signing.py":  {
+                                                                   "worktree_sha256":  "6cb5a2b10c500a241b936c5654d19c1af72372d6996813815cdbd0fb48feb60c",
+                                                                   "head":  "7827816cca07e1f0e8f3e91ad86a897d029d1e09"
+                                                               },
+                  "src/tutor_match_meta/prompts/__init__.py":  {
+                                                                   "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                   "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                               },
+                  "src/tutor_match_meta/rag/embeddings.py":  {
+                                                                 "worktree_sha256":  "2c5c58f5ab89b3071de49cc1318980910b06e13373d2cad06b25f39b1fe989e3",
+                                                                 "head":  "3f105ee54543c3a7f5e6d4f4759fe81ca1509530"
+                                                             },
+                  "src/tutor_match_meta/handlers/lambda_entry.py":  {
+                                                                        "worktree_sha256":  "802da1f00fea0b79fd53825768a913593488fdf7aab98b74fe8dcf8e3088537c",
+                                                                        "head":  "023517c6192a86bdb034d25091443d558eb84779"
+                                                                    },
+                  "infra/terraform/glue.tf":  {
+                                                  "worktree_sha256":  "66907a4d3e498c14f6c49e415e1fd17bef60592f77fe325a79924e566ff143af",
+                                                  "head":  "fd4aabfec3c0fe876aaaed87b59698c027a8ddd6"
+                                              },
+                  "tests/unit/__init__.py":  {
+                                                 "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                 "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                             },
+                  "src/tutor_match_meta/fixtures/__init__.py":  {
+                                                                    "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                    "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                },
+                  "src/tutor_match_meta/contracts/scoring.py":  {
+                                                                    "worktree_sha256":  "cf6e9aaa6e164eda5a9a791674be3cede1ee46f09ac86ca0c2a30f20664abe4d",
+                                                                    "head":  "1fb22ad4ddd5a80f06e742b1b6bdbff84974d607"
+                                                                },
+                  "src/tutor_match_meta/domain/academics.py":  {
+                                                                   "worktree_sha256":  "60ad53ec6823b2c3b26d889cda8b59d18e711f2f5e99716124ee8dd51717ab55",
+                                                                   "head":  "f981ca0f5d5f606add396ef7e537ce866d45339a"
+                                                               },
+                  "tests/e2e/test_conversations.py":  {
+                                                          "worktree_sha256":  "ecae48ac3f176561027e5656cba871a0661f52e6ee55891eb553d11a3e6b9ee2",
+                                                          "head":  "e8b2075d47a275a845d28363a19f3508bb212a40"
+                                                      },
+                  "src/tutor_match_meta/matching/subject_expertise/evaluator.py":  {
+                                                                                       "worktree_sha256":  "f39e005dc9b719e30121f60d49859a9ebabb944e28bedb1f2bb313d6413479b6",
+                                                                                       "head":  "2570048b91904fd531b63976f3c6dd3a766689c7"
+                                                                                   },
+                  "src/tutor_match_meta/integrations/website/tutor_feed.py":  {
+                                                                                  "worktree_sha256":  "82cc1bbf8c886ef2bae91ef1d31dda6a68bb9e5ce1ef442a3819ba918ec635f9",
+                                                                                  "head":  "8c22eb384ced14f1c4fbdb2cd86fa9aaead06c7b"
+                                                                              },
+                  "infra/terraform/terraform.tfvars.example":  {
+                                                                   "worktree_sha256":  "f76074381406d7c8e4b68f82bc55197ed60b3450772d1b8c0a7e27daccfaf26e",
+                                                                   "head":  "9725ff3c8bb4e3f763bc52ce1420bc80887ab899"
+                                                               },
+                  "src/tutor_match_meta/repositories/models.py":  {
+                                                                      "worktree_sha256":  "8d7554f0899d0d6d11fecd623f99f2c6fb28e8f08b353b8e0b97e53975e3e2d6",
+                                                                      "head":  "3766477321494d46a5520c80ccba0f73fbf1851b"
+                                                                  },
+                  "tests/unit/test_rate_limit_sql.py":  {
+                                                            "worktree_sha256":  "d0c5116a7aa92b9491ff0efcf005ae4549b09f984766d5b447efe4fafa953d18",
+                                                            "head":  "503f983c9984d990983c0678181b6dd53fbc1c04"
+                                                        },
+                  "src/tutor_match_meta/security/rate_limit.py":  {
+                                                                      "worktree_sha256":  "6653a24ce8e07c8f17f0f1fd4e6525da1158907f2163bdf61095a43d3a84cedf",
+                                                                      "head":  "af0f462651249b4ac07d5ab7a08f9a6f3e7e8ba4"
+                                                                  },
+                  "tests/unit/test_matching.py":  {
+                                                      "worktree_sha256":  "787d05def5f7f6bc23da1b5ac280ec55f0b4830aad4fb9806049141a219803b5",
+                                                      "head":  "f99817c2a38db292b157a2ebeebca1aa91b94efb"
+                                                  },
+                  "tests/contract/test_external_contracts.py":  {
+                                                                    "worktree_sha256":  "3673549965babd588dfcf1d41ad4a8dab754051ad3d20bacebe533bb5cf697ec",
+                                                                    "head":  "d2b496f54029f6043ce6c8f3d292debdcd91b41f"
+                                                                },
+                  "src/tutor_match_meta/matching/negotiation/__init__.py":  {
+                                                                                "worktree_sha256":  "2fe031bfb21d154b1176b4aa4f43cb18d9ce70c6de2bcc185c40c898dd964ca0",
+                                                                                "head":  "817df37beff58d80a00dd0b31e352b093f1da867"
+                                                                            },
+                  "src/tutor_match_meta/contracts/requirement.py":  {
+                                                                        "worktree_sha256":  "734e583b33576f68a090e75b10d64e563f5dd67272a373316e038b80fa18ddf5",
+                                                                        "head":  "f90930d6428592633ce232fd305eda4d236533d1"
+                                                                    },
+                  "src/tutor_match_meta/observability/context.py":  {
+                                                                        "worktree_sha256":  "89cc2b8c599a9b2f197845f2f7b8178eedffb172e9854f33fa8b1223787d8b42",
+                                                                        "head":  "a89f640980fe425a629295677817f65696fa8b66"
+                                                                    },
+                  "src/tutor_match_meta/domain/subjects.py":  {
+                                                                  "worktree_sha256":  "3eced39f738270525ad2d4085418af2b79557226b62a90feefd65f26ac463786",
+                                                                  "head":  "736e1a548b024e8d3274c99475987df4135592b5"
+                                                              },
+                  "src/tutor_match_meta/matching/replacement_risk/__init__.py":  {
+                                                                                     "worktree_sha256":  "b032737f2b394114c7f08e8e460aa8143bd0e03f6cefde89ad0bfa3dc72b7cfa",
+                                                                                     "head":  "75b054a31537cbd5ebeba7bb7cd657cf364814e6"
+                                                                                 },
+                  "src/tutor_match_meta/security/injection.py":  {
+                                                                     "worktree_sha256":  "f2adad4038908508415b10c8ee098a7e8bd7103ada5115081e3cc6c3f31b6e28",
+                                                                     "head":  "267f9eea70e6e31874c71f3f0b9f388b097f7917"
+                                                                 },
+                  "tests/security/test_cache_hygiene.py":  {
+                                                               "worktree_sha256":  "5e218ed17856d03b57fe9e6c8d686b67c89312eeed496416d760b8c957f3afff",
+                                                               "head":  "51334b5290db95f7e8a567188d9dcd005dfebd8a"
+                                                           },
+                  "src/tutor_match_meta/repositories/memory_store.py":  {
+                                                                            "worktree_sha256":  "a404904cdca806d0b285c9ef8c27eddbf507989ccaf0e7855b00f80b1a19ce8a",
+                                                                            "head":  "092577106ba3bf62b13cca23657c57638ae558e6"
+                                                                        },
+                  "src/tutor_match_meta/contracts/inbound.py":  {
+                                                                    "worktree_sha256":  "17e4a62c5195b11ad60b309c04c33620fb7322159025a02cd290ff6016801aac",
+                                                                    "head":  "f7013d2406e6443895be0653866128b34ea3d3ca"
+                                                                },
+                  "src/tutor_match_meta/integrations/geo/__init__.py":  {
+                                                                            "worktree_sha256":  "5cf8787c94aaefa29568639896d6ce90d14b287c5367da6fa2ec347829aa43d3",
+                                                                            "head":  "897ddb08d4a0ea0610ab8d0c6b07381af97ddc64"
+                                                                        },
+                  "infra/terraform/cost.tf":  {
+                                                  "worktree_sha256":  "24b493456fe0a297d81e1d21faef34527e6042c7e00bd454b7498cf3227d8571",
+                                                  "head":  "6f56127b74f7d7c44440cf26acc7a73847d4e626"
+                                              },
+                  "tests/integration/__init__.py":  {
+                                                        "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                        "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                    },
+                  "src/tutor_match_meta/orchestration/tutor_lookup.py":  {
+                                                                             "worktree_sha256":  "c870bd1f3607225ed2a3021a55b64526f9fe51f2eb2bde7f3aa1e30c4ec45841",
+                                                                             "head":  "be0fc12466aa212b314029d15f9912d244271dcc"
+                                                                         },
+                  "tests/unit/test_tutor_lookup.py":  {
+                                                          "worktree_sha256":  "4d2eda7f162c4c47238436f6b9efc9d54e1d84ef81b6daa7dc17b3b29d65efae",
+                                                          "head":  "44bfae218b00aa403c0054ad66d065e7a3a40867"
+                                                      },
+                  "src/tutor_match_meta/matching/academic/__init__.py":  {
+                                                                             "worktree_sha256":  "df4909183e5e0344ccc9532769ae88eea9a528937437f5684d0b8459b131f692",
+                                                                             "head":  "8232129e9695d9fb2835ec3e6d9d34cb46efd300"
+                                                                         },
+                  "src/tutor_match_meta/jobs.py":  {
+                                                       "worktree_sha256":  "0d4486c1ba8aaeed565527cea4c8b09048c45ca0207ec622bb9612f1adc86ec7",
+                                                       "head":  "8978d5f4e01cc4cad216e02bc3e4e21314ef2df2"
+                                                   },
+                  "src/tutor_match_meta/contracts/common.py":  {
+                                                                   "worktree_sha256":  "b8f824134f290b1f7f4022b08b9d09477ab621a31270825e043cc44058bbfdec",
+                                                                   "head":  "ed08042adb561e183b022f269a24eab7664e7052"
+                                                               },
+                  "src/tutor_match_meta/handlers/__init__.py":  {
+                                                                    "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                    "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                },
+                  "src/tutor_match_meta/cache/base.py":  {
+                                                             "worktree_sha256":  "81ac3d9d9530365654470ca28fb007d359725d42ddd2fd9c2bbb9c04d0f6454f",
+                                                             "head":  "21c422bd4dd3e527a0ae8aa77447677fb26bfc03"
+                                                         },
+                  "src/tutor_match_meta/domain/fees.py":  {
+                                                              "worktree_sha256":  "eb72beab86bae2a0f3b18ee3d4265460025a2d765de2d959e5f1e83c2ae7b5ce",
+                                                              "head":  "16cf8d4ce5a8c14a6ebe49f5add3950ff8606e7e"
+                                                          },
+                  "src/tutor_match_meta/contracts/schedule.py":  {
+                                                                     "worktree_sha256":  "98e43027935be3db37dada8613052c3e9469ad05f68846eb4d134a22b5ec8822",
+                                                                     "head":  "2cef05caca6db94a193e045ae060aae7ef07f8f8"
+                                                                 },
+                  "src/tutor_match_meta/sync/outbox_relay.py":  {
+                                                                    "worktree_sha256":  "f8811bc31192af90bda314ace3cadf03ec9e29a4da4e1af2df8dfe6db2263e0f",
+                                                                    "head":  "4ce13e7d17eec5aa2feb310ab0f889e72bcffc29"
+                                                                },
+                  "tests/unit/test_version_and_relay.py":  {
+                                                               "worktree_sha256":  "a49f0b533b8bb61bb8e01d7c71944c02c13cac23121bf07cc3f3b6e8e073da80",
+                                                               "head":  "bb4de00248aad0586ff79a9968e1d1593841cf12"
+                                                           },
+                  "src/tutor_match_meta/matching/base.py":  {
+                                                                "worktree_sha256":  "bf9722ab20798144d4f3bd02465ba3bcc1f53d384a6b7b789552f239877c1a9c",
+                                                                "head":  "d3ec314a96746f453ac62b56cc98414c4a3fff6c"
+                                                            },
+                  "tests/security/test_model_payload.py":  {
+                                                               "worktree_sha256":  "b4e82293efa6aaca19909ca3089146fbe92c215d5f322521ad71840c50a8286d",
+                                                               "head":  "a46c2ac44a71ab84928cf7314131703f1376af6d"
+                                                           },
+                  "src/tutor_match_meta/orchestration/model_context.py":  {
+                                                                              "worktree_sha256":  "92ac74583b0652c4d0d68046c28d2a35e2194f20e4ceb351094d3c941e149a61",
+                                                                              "head":  "1465b6068064069bcfd28782487804afcc30057d"
+                                                                          },
+                  "src/tutor_match_meta/matching/availability/__init__.py":  {
+                                                                                 "worktree_sha256":  "e579c287eb9dc832fb28a43007bba790adceca3dfcbce31cadc77903238f070c",
+                                                                                 "head":  "13d1dc5ce59f0f81aafcfdbdf64a0fe912823651"
+                                                                             },
+                  "tests/contract/test_agent_harmony_contracts.py":  {
+                                                                         "worktree_sha256":  "fa0cc34a6d47f9ab7f31e106d11cc2e179db96319b0ba3a53ba8fc844d91ab36",
+                                                                         "head":  "761044867e8a7a0c3ea5c40578f1e4ad13c49e6b"
+                                                                     },
+                  "src/tutor_match_meta/integrations/llm/stub.py":  {
+                                                                        "worktree_sha256":  "2483334a78aac41ea88556315f94ed78a4451ca15b61b98d37147e19fcd2a33a",
+                                                                        "head":  "9bdbe561e29e91e686c20bb62a1306acd83775f9"
+                                                                    },
+                  "src/tutor_match_meta/matching/academic/evaluator.py":  {
+                                                                              "worktree_sha256":  "748dcc7751d5fd7405a893fffe8836551e172c01142a13a63c4367b351d3ac46",
+                                                                              "head":  "1db4c741c12a558eb4d8153ac3e1ee8c27057b8d"
+                                                                          },
+                  "src/tutor_match_meta/repositories/schema_check.py":  {
+                                                                            "worktree_sha256":  "534c501fbb89b6ec5c6cdd8b8a85ece09dc88e6594110f16b1fca51b7745027e",
+                                                                            "head":  "4030e93b7ad6d59db40f19c35f0a84fd75d660ed"
+                                                                        },
+                  "tests/security/__init__.py":  {
+                                                     "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                     "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                 },
+                  "src/tutor_match_meta/integrations/geo/provider.py":  {
+                                                                            "worktree_sha256":  "551859a449d48c09ef9c78a65daaf655f98f3765a853d9e008619cc8db915360",
+                                                                            "head":  "e733609153fb566527e5fcea1e9c6777277753b0"
+                                                                        },
+                  "tests/load/test_throughput.py":  {
+                                                        "worktree_sha256":  "3b05c22f17d9225e52eaf95aa9432eafd814920fc52e6a3d17eae18fabd3a471",
+                                                        "head":  "8c8d52d8208dee28e7a9aa5d14846f7ae5363434"
+                                                    },
+                  "src/tutor_match_meta/security/__init__.py":  {
+                                                                    "worktree_sha256":  "0dc8b4a319aa6ce25da56381cb3baa14b72d23e98a8ed58c05136c562175bb0e",
+                                                                    "head":  "66a124d148126af9fd447c55347491da64e03af7"
+                                                                },
+                  "migrations/script.py.mako":  {
+                                                    "worktree_sha256":  "3dc42dd031f55e84aeb258ec37dd1fe15d5830b1a712da2f9440b9ea41b18b78",
+                                                    "head":  "599f1408d0c3ad6ffe08bbdacb720dde562b8a16"
+                                                },
+                  "src/tutor_match_meta/matching/hard_filters.py":  {
+                                                                        "worktree_sha256":  "65f431bcf20e696b7cc584860730b4f72e08c3e77002f3f5ac5667ed20194fd9",
+                                                                        "head":  "1e961244967969353cc5e864ad1ff34a2ce63ad8"
+                                                                    },
+                  "src/tutor_match_meta/orchestration/handoff_service.py":  {
+                                                                                "worktree_sha256":  "939eadb29deade030a954e3e92f059298ab7b5752a29c6c1f20a4710883ceca5",
+                                                                                "head":  "d8d69e9090ded96ef923842a4146312c714ac425"
+                                                                            },
+                  "src/tutor_match_meta/integrations/website/gateway.py":  {
+                                                                               "worktree_sha256":  "56237b913bce15c73ef8065ea057b6e22eff65cdd8c94a7be3a8782f98c36bd4",
+                                                                               "head":  "ec44d56543a0ea36f95e6e74716138d1e35132c3"
+                                                                           },
+                  "tests/unit/test_tutor_feed.py":  {
+                                                        "worktree_sha256":  "59bd954c12e26c44fe9087f7c414f81083a68812bdecd85200d41dc20a5e6b66",
+                                                        "head":  "d928b5f31053b2ca93973ac7a63335102dd4bfa4"
+                                                    },
+                  ".github/workflows/rollback.yml":  {
+                                                         "worktree_sha256":  "a2e478bd53cd72f34707baecf5a6acbf9a2fc7c138551b3413e9a60eec0e3579",
+                                                         "head":  "f2fb436e1f607e33d928f9ec6f7eb84c64c89401"
+                                                     },
+                  "tests/integration/conftest.py":  {
+                                                        "worktree_sha256":  "feac850d2e00f1ef7fb3119c472551dcf883c0789c2929aa9e4d9bc31df00750",
+                                                        "head":  "9fe1b3a53fd83e59484ee0f21a6a9f8f1182b24d"
+                                                    },
+                  "tests/unit/test_migrations.py":  {
+                                                        "worktree_sha256":  "0b6848ae78da05b10b168a4acec6dadd6f32cc36fd1eaa4190555d134fe10371",
+                                                        "head":  "2ad1be949686bb29173061b209c299df48fc50ea"
+                                                    },
+                  "src/tutor_match_meta/matching/negotiation/evaluator.py":  {
+                                                                                 "worktree_sha256":  "fdaf8878b405ffa19d53a28c3ca1d0b78d019f5945940d222354e1b047273ebd",
+                                                                                 "head":  "c465b75e65112dad36904db8b555d13dd2768eee"
+                                                                             },
+                  "src/tutor_match_meta/cli/doctor.py":  {
+                                                             "worktree_sha256":  "a20d80bdced57bc00d5d3b3df31b09ddde6b170d7b194da4f378da523741a968",
+                                                             "head":  "66b6e24056c284b3e93739c56430df0a509f31e9"
+                                                         },
+                  "tests/unit/test_cost_controls.py":  {
+                                                           "worktree_sha256":  "7ad0883d857d605c1ef77fa2ca5d33f8db1964befba33c819e0baf32ca8a84cd",
+                                                           "head":  "9cf29d2bf650bd64fd024dd59aa618a4220cd417"
+                                                       },
+                  "src/tutor_match_meta/security/urls.py":  {
+                                                                "worktree_sha256":  "f0689df57ab85ee915849f74b59f13fb424a290f913f2d18e565fb94f975f19e",
+                                                                "head":  "b0cbe9b50a9f75d4a281403dd01eb0f410e7ab86"
+                                                            },
+                  "infra/terraform/main.tf":  {
+                                                  "worktree_sha256":  "cc160e5b995ef37575e94ed6a1c10a4f3af34fe30399d315a8b07e9bdddeb832",
+                                                  "head":  "861e501a5cfab7e04944ddd5d1ddd291944ebdf8"
+                                              },
+                  "src/tutor_match_meta/rag/__init__.py":  {
+                                                               "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                               "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                           },
+                  "infra/terraform/api.tf":  {
+                                                 "worktree_sha256":  "b5d4c3828884b66fe62c475addfdcae4a114aa3157531d317797750a781cc2ea",
+                                                 "head":  "05243d41aadfcd52dfc50a2ba71ae4a0c0bcb3c2"
+                                             },
+                  "config/policies/hybrid_tuition.v1.yaml":  {
+                                                                 "worktree_sha256":  "949034dfbc31d7b1f4e95151802cf023b9800f564898debcfafcade041b5c9e3",
+                                                                 "head":  "1b781d5476feb3c4a2b25b3bff7db9bb6abf9a1c"
+                                                             },
+                  "src/tutor_match_meta/prompts/registry.py":  {
+                                                                   "worktree_sha256":  "e2b14ffbc64108f3f4b63ec6e0af61519fa2bb8e2a5d22434c94c5c0609b20f9",
+                                                                   "head":  "a29f54149aafdb725702fd2e52f57e7409c26a4c"
+                                                               },
+                  "tests/security/test_analytics_privacy.py":  {
+                                                                   "worktree_sha256":  "d64f1fd9f35b98386a30e30840a53b459e6d9971fa09612e812823d7bfb7c8ca",
+                                                                   "head":  "fe3f618721283346e2895ed6e142326122e9d279"
+                                                               },
+                  "src/tutor_match_meta/handlers/ingress.py":  {
+                                                                   "worktree_sha256":  "5ea7087c26520cb568a73e6bb4b7f6ae82d7d64800475d48511e98797c458ed3",
+                                                                   "head":  "c74124ae8c11aa18f90d990ee5d15c209ca8f6bf"
+                                                               },
+                  "src/tutor_match_meta/integrations/website/__init__.py":  {
+                                                                                "worktree_sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                                                                                "head":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+                                                                            },
+                  "tests/contract/test_composed_agent_coverage.py":  {
+                                                                         "worktree_sha256":  "a0905b2a8cca9e2cbe3d50ed1a9d824d20abaad40a5e0987da6c4d48e0aa6ac2",
+                                                                         "head":  "01781763e5ca45cb1252bcacf720b37378bf4ab8"
+                                                                     },
+                  "src/tutor_match_meta/orchestration/continuation.py":  {
+                                                                             "worktree_sha256":  "8863c99ae082012fdddeb5a38d4d766337097d2900fb247b3ece4e2c8a8182b1",
+                                                                             "head":  "0e2c6e346fad87cb7ba423fa09e20ca0f2dd8f43"
+                                                                         },
+                  "src/tutor_match_meta/contracts/handoff.py":  {
+                                                                    "worktree_sha256":  "9e132404ebabb1de023df53e45fb82dab01ce402b56037e9028f094694829e5a",
+                                                                    "head":  "6a795d80803eaa61f762ed69ffca567a449a2dea"
+                                                                },
+                  "src/tutor_match_meta/observability/metrics.py":  {
+                                                                        "worktree_sha256":  "040b567bb3f7119f4c62bf073109edce9dede09d2c25c6cbbae5a33bd825e7c5",
+                                                                        "head":  "b5784679f6472c8deedc2087d4be0aa654e3d79d"
+                                                                    },
+                  "src/tutor_match_meta/scoring/combiner.py":  {
+                                                                   "worktree_sha256":  "8b09eba8cdb31f2b1d0cb047a8f54233ec56c8752362a1a7787faff07685c361",
+                                                                   "head":  "14a0981b57bf940b7808417c467567edef76977b"
+                                                               },
+                  "src/tutor_match_meta/integrations/whatsapp/outbound.py":  {
+                                                                                 "worktree_sha256":  "e42aa969b262981b563ca5180eaf2670ef0a16c741b19347c129e43e4a1b3172",
+                                                                                 "head":  "01971ff2c8b5008352d2d95e99ff059e290220c2"
+                                                                             },
+                  "src/tutor_match_meta/domain/identity.py":  {
+                                                                  "worktree_sha256":  "7e8a1ae355a39a1d838df6b6c0f7990dbb65563f8df51c1939524498139c5f3d",
+                                                                  "head":  "dc11766ecdcdbbf434b794645acb54e010555322"
+                                                              }
+              }
+}

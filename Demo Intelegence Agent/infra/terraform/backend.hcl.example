@@ -1,0 +1,14 @@
+# Example non-S3 backend configurations. Copy to backend.hcl and fill in.
+# See docs/operations/terraform-state.md for the decision record.
+
+# --- Terraform Cloud / Enterprise
+# hostname     = "app.terraform.io"
+# organization = "nxtutors"
+# workspaces { name = "demo-command-center-production" }
+
+# --- HTTP backend (e.g. GitLab-managed state)
+# address        = "https://example.invalid/api/v4/projects/1/terraform/state/dcc"
+# lock_address   = "https://example.invalid/api/v4/projects/1/terraform/state/dcc/lock"
+# unlock_address = "https://example.invalid/api/v4/projects/1/terraform/state/dcc/lock"
+# lock_method    = "POST"
+# unlock_method  = "DELETE"

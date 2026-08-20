@@ -60,8 +60,9 @@ class RateLimited(Exception):
 
 @runtime_checkable
 class Limiter(Protocol):
-    async def check(self, scope: LimitScope, key: str, *, limit: int, per_seconds: int) -> Decision:
-        ...
+    async def check(
+        self, scope: LimitScope, key: str, *, limit: int, per_seconds: int
+    ) -> Decision: ...
 
 
 @dataclass(slots=True)
@@ -111,8 +112,7 @@ class CounterStore(Protocol):
 
     async def increment_window(
         self, *, scope: str, key: str, window_start: int, ttl_seconds: int
-    ) -> int:
-        ...
+    ) -> int: ...
 
 
 class DurableLimiter:
@@ -139,7 +139,7 @@ class DurableLimiter:
                 window_start=window_start,
                 ttl_seconds=per_seconds * 2,
             )
-        except Exception:  # noqa: BLE001 - see docstring: fail open, but loudly
+        except Exception:
             from demo_command_center.observability.logging import get_logger
 
             get_logger("rate_limit").warning(

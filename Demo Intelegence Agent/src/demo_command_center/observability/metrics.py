@@ -16,7 +16,7 @@ import json
 import sys
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Final
+from typing import Final, TextIO
 
 from demo_command_center.security.pii import assert_label_safe
 
@@ -42,6 +42,11 @@ class Metric(StrEnum):
     """
 
     WEBHOOK_ACCEPTED = "WebhookAccepted"
+    #: A parent message that reached a trigger, and one that did not.
+    #: The second is the signal that the vocabulary has a gap: it means a
+    #: real person wrote something the router could not act on.
+    INBOUND_ROUTED = "InboundRouted"
+    INBOUND_UNROUTED = "InboundUnrouted"
     WEBHOOK_REJECTED = "WebhookRejected"
     WEBHOOK_SIGNATURE_FAILURE = "WebhookSignatureFailure"
     WEBHOOK_DUPLICATE = "WebhookDuplicate"
@@ -109,7 +114,7 @@ class MetricPoint:
 class EmfEmitter:
     """Writes EMF documents to stdout. One line, one metric family."""
 
-    def __init__(self, *, namespace: str = NAMESPACE, stream: object | None = None) -> None:
+    def __init__(self, *, namespace: str = NAMESPACE, stream: TextIO | None = None) -> None:
         self._namespace = namespace
         self._stream = stream or sys.stdout
 
@@ -138,7 +143,7 @@ class EmfEmitter:
             metric.value: value,
             **dimensions,
         }
-        print(json.dumps(document, separators=(",", ":")), file=self._stream)  # noqa: T201
+        print(json.dumps(document, separators=(",", ":")), file=self._stream)
 
 
 class NullEmitter:
@@ -156,9 +161,7 @@ class NullEmitter:
         **dimensions: str,
     ) -> None:
         assert_label_safe(dimensions)
-        self.emitted.append(
-            MetricPoint(metric, value, unit, tuple(sorted(dimensions.items())))
-        )
+        self.emitted.append(MetricPoint(metric, value, unit, tuple(sorted(dimensions.items()))))
 
     def count(self, metric: Metric) -> int:
         return sum(1 for point in self.emitted if point.name is metric)

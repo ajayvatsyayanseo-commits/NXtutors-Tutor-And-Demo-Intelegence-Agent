@@ -21,8 +21,20 @@
 #          -> outbound.fifo
 #          -> outbound-worker(internet)  Meta Cloud API. No database grant.
 #
-# Every function declares its side as TMM_NETWORK_ZONE, and the test suite
-# asserts that declaration matches whether the function has a `vpc_config`.
+# NO function is VPC-attached. The stack is fully serverless: no VPC, no NAT
+# Gateway, no VPC endpoints, no RDS Proxy, nothing billed by the hour. The
+# database is reached over its public endpoint with TLS required.
+#
+# `TMM_NETWORK_ZONE` survives that change and still means what it always meant,
+# because it was never really about the network: it declares what a function is
+# *allowed to talk to*. `vpc` means "database-side: opens a session, makes no
+# LLM call"; `internet` means "no database grant at all". The match worker
+# could now technically reach api.openai.com and still must not — the enrich
+# worker already did that work, and a second extraction would pay twice for a
+# worse answer.
+#
+# The test suite asserts both halves: that every function declares a zone, and
+# that no function carries a `vpc_config`.
 # See src/tutor_match_meta/contracts/enrichment.py for the full rationale.
 ###############################################################################
 
@@ -353,10 +365,6 @@ data "aws_iam_policy_document" "worker" {
     actions   = ["secretsmanager:GetSecretValue"]
     resources = [data.aws_secretsmanager_secret.app.arn]
   }
-  statement {
-    actions   = ["rds-db:connect"]
-    resources = ["arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${var.rds_proxy_resource_id}/${var.db_username}"]
-  }
 }
 
 data "aws_iam_policy_document" "outbound" {
@@ -407,10 +415,6 @@ data "aws_iam_policy_document" "scheduled" {
     actions   = ["secretsmanager:GetSecretValue"]
     resources = [data.aws_secretsmanager_secret.app.arn]
   }
-  statement {
-    actions   = ["rds-db:connect"]
-    resources = ["arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${var.rds_proxy_resource_id}/${var.db_username}"]
-  }
 }
 
 locals {
@@ -442,42 +446,6 @@ resource "aws_iam_role_policy_attachment" "basic" {
   }
   role       = each.value
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "vpc" {
-  for_each = {
-    worker    = aws_iam_role.worker.name
-    scheduled = aws_iam_role.scheduled.name
-  }
-  role       = each.value
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
-###############################################################################
-# Networking
-###############################################################################
-
-resource "aws_security_group" "lambda" {
-  name        = "${local.name}-lambda"
-  description = "tutor-match-meta lambdas"
-  vpc_id      = var.vpc_id
-  tags        = local.tags
-
-  egress {
-    description = "PostgreSQL via RDS Proxy"
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = var.database_cidr_blocks
-  }
-
-  egress {
-    description = "AWS service VPC endpoints"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.vpc_cidr_blocks
-  }
 }
 
 ###############################################################################
@@ -543,10 +511,6 @@ resource "aws_lambda_function" "match_worker" {
   # RDS Proxy connection limit is how the database gets exhausted.
   reserved_concurrent_executions = local.worker_concurrency
 
-  vpc_config {
-    subnet_ids         = var.private_subnet_ids
-    security_group_ids = [aws_security_group.lambda.id]
-  }
 
   # `network_zone=vpc` is what stops this function building an OpenAI client.
   # It has no route to api.openai.com, so a provider here would block until
@@ -665,10 +629,6 @@ resource "aws_lambda_function" "scheduled" {
   timeout     = 300
   memory_size = 1024
 
-  vpc_config {
-    subnet_ids         = var.private_subnet_ids
-    security_group_ids = [aws_security_group.lambda.id]
-  }
 
   environment {
     variables = merge(local.common_environment, { TMM_NETWORK_ZONE = "vpc" })

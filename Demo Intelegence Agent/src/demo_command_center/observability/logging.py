@@ -55,7 +55,12 @@ class TraceContext:
         return {k: v for k, v in asdict(self).items() if v}
 
 
-_context: ContextVar[TraceContext] = ContextVar("dcc_trace_context", default=TraceContext())
+# B039 flags a shared default. `TraceContext` is a frozen slotted dataclass, so
+# the shared instance cannot be mutated — `bind()` always replaces it.
+_context: ContextVar[TraceContext] = ContextVar(
+    "dcc_trace_context",
+    default=TraceContext(),  # noqa: B039
+)
 
 
 def bind(**fields: str) -> TraceContext:

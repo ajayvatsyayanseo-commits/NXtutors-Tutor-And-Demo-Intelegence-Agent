@@ -109,14 +109,12 @@ resource "aws_lambda_function" "internal_api" {
   timeout     = 10
   memory_size = 1024
 
-  # Same reserved concurrency budget as the worker: both open database
-  # connections through the proxy, and the ceiling has to cover the sum.
+  # Same reserved concurrency budget as the worker. With no RDS Proxy in
+  # front, this ceiling IS the connection ceiling: each concurrent
+  # execution holds its own connection to the instance, so the sum of the
+  # two must stay under the database's max_connections.
   reserved_concurrent_executions = var.internal_api_reserved_concurrency
 
-  vpc_config {
-    subnet_ids         = var.private_subnet_ids
-    security_group_ids = [aws_security_group.lambda.id]
-  }
 
   # VPC-attached, so `network_zone=vpc`: the handoff path reads conversation
   # state and the tutor projection, and must not attempt an LLM call — this

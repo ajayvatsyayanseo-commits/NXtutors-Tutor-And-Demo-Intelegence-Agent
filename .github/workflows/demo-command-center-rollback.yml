@@ -1,0 +1,119 @@
+name: demo-command-center-rollback
+
+# Moves the `live` alias back to a known-good version. It deploys nothing and
+# builds nothing — that is what makes it fast enough to use during an incident.
+#
+# Terraform is deliberately NOT run here. A rollback under pressure that also
+# re-plans infrastructure is how a bad afternoon becomes a bad week.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to roll back
+        required: true
+        type: choice
+        options: [dev, staging, production]
+      target_version:
+        description: Lambda version to point `live` at, or "previous"
+        required: true
+        default: previous
+        type: string
+      reason:
+        description: Why (recorded in the run and in the alias description)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  rollback:
+    name: roll ${{ inputs.environment }} back
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.DCC_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.DCC_AWS_REGION }}
+          role-session-name: dcc-rollback-${{ github.run_id }}
+
+      - name: record the current state before changing anything
+        run: |
+          PREFIX="demo-command-center-${{ inputs.environment }}"
+          echo "### Before rollback" >> "$GITHUB_STEP_SUMMARY"
+          echo "| function | live version |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          for fn in $(aws lambda list-functions \
+              --query "Functions[?starts_with(FunctionName, '$PREFIX')].FunctionName" \
+              --output text); do
+            V=$(aws lambda get-alias --function-name "$fn" --name live \
+                --query 'FunctionVersion' --output text)
+            echo "| $fn | $V |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: move the alias
+        run: |
+          set -e
+          PREFIX="demo-command-center-${{ inputs.environment }}"
+          echo "### After rollback" >> "$GITHUB_STEP_SUMMARY"
+          echo "| function | from | to |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+
+          for fn in $(aws lambda list-functions \
+              --query "Functions[?starts_with(FunctionName, '$PREFIX')].FunctionName" \
+              --output text); do
+            CURRENT=$(aws lambda get-alias --function-name "$fn" --name live \
+                      --query 'FunctionVersion' --output text)
+
+            if [ "${{ inputs.target_version }}" = "previous" ]; then
+              TARGET=$(aws lambda list-versions-by-function --function-name "$fn" \
+                       --query 'Versions[-2].Version' --output text)
+            else
+              TARGET="${{ inputs.target_version }}"
+            fi
+
+            if [ "$TARGET" = "None" ] || [ -z "$TARGET" ]; then
+              echo "| $fn | $CURRENT | SKIPPED (no earlier version) |" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+
+            aws lambda update-alias --function-name "$fn" --name live \
+              --function-version "$TARGET" \
+              --description "rollback: ${{ inputs.reason }}"
+            echo "| $fn | $CURRENT | $TARGET |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: verify every alias is active
+        run: |
+          set -e
+          PREFIX="demo-command-center-${{ inputs.environment }}"
+          for fn in $(aws lambda list-functions \
+              --query "Functions[?starts_with(FunctionName, '$PREFIX')].FunctionName" \
+              --output text); do
+            STATE=$(aws lambda get-function-configuration --function-name "$fn" \
+                    --qualifier live --query 'State' --output text)
+            echo "$fn: $STATE"
+            [ "$STATE" = "Active" ] || exit 1
+          done
+
+      - name: note what a rollback does NOT undo
+        run: |
+          {
+            echo ""
+            echo "### Not rolled back"
+            echo "- **Database migrations.** Demo migrations are additive; an older"
+            echo "  package runs against a newer schema. A schema change that is not"
+            echo "  backwards compatible needs a forward fix, not this workflow."
+            echo "- **In-flight queue messages.** Messages enqueued by the newer"
+            echo "  version are consumed by the older one. The typed event contract"
+            echo "  is versioned for exactly this."
+            echo "- **Infrastructure.** Terraform was not run. Queues, IAM and alarms"
+            echo "  are unchanged."
+          } >> "$GITHUB_STEP_SUMMARY"

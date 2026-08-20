@@ -32,3 +32,35 @@ COMPOSED_AGENT_IDS: Final[tuple[str, ...]] = (
     "036",  # Demo-to-Paid Transition
     "129",  # Demo Monitoring Regional
 )
+
+#: Which capability module implements each composed agent. Asserted by
+#: `tests/contract/test_composed_agents.py`: a registry id with no module behind
+#: it is a capability we claim to have and do not.
+CAPABILITY_MODULES: Final[dict[str, str]] = {
+    "018": "demo_command_center.capabilities.forecasting.service",
+    "025": "demo_command_center.capabilities.scheduling.service",
+    "026": "demo_command_center.capabilities.reminders.service",
+    "031": "demo_command_center.capabilities.objection_extraction.service",
+    "032": "demo_command_center.capabilities.conversion.service",
+    "034": "demo_command_center.capabilities.discounts.service",
+    "036": "demo_command_center.capabilities.paid_transition.service",
+    "129": "demo_command_center.capabilities.monitoring.service",
+}
+
+
+def build_info() -> dict[str, str]:
+    """What is deployed. Read by `/version`, the doctor and every audit row.
+
+    The commit sha is read from the environment because it is injected at build
+    time; a build with no sha reports `unknown` rather than failing, since a
+    missing label must not stop a deploy from reporting its own identity.
+    """
+    import os
+
+    return {
+        "agent_id": AGENT_ID,
+        "version": RELEASE_VERSION,
+        "contract_version": CONTRACT_VERSION,
+        "commit": os.environ.get("DCC_GIT_SHA", "unknown"),
+        "composed_agents": ",".join(COMPOSED_AGENT_IDS),
+    }

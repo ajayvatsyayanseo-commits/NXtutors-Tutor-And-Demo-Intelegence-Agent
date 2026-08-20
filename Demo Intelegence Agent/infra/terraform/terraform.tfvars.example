@@ -1,0 +1,93 @@
+###############################################################################
+# demo-command-center — operator variable template
+#
+# Copy to `<environment>.tfvars` (dev.tfvars / staging.tfvars /
+# production.tfvars), fill in the real ARNs, and keep it out of git — the
+# repository ignores `*.tfvars` precisely because these values name real
+# accounts. This `.example` file is committed and holds no real value.
+#
+#   cp terraform.tfvars.example staging.tfvars
+#
+# `environment` and `release_sha` are NOT set here. The deploy workflow passes
+# both on the command line so a stale file can never pin the wrong SHA.
+###############################################################################
+
+###############################################################################
+# Persistence — an operator decision with no default. Read this before picking.
+###############################################################################
+
+# "data_api"     Aurora Serverless RDS Data API. No VPC, no NAT, no driver, no
+#                security group to manage. REQUIRES a cluster with the Data API
+#                enabled, and `aurora_cluster_arn` below.
+#
+# "postgres_dsn" A direct asyncpg connection. Works against any PostgreSQL
+#                endpoint, including a plain RDS instance with no Data API —
+#                which is what the shared `TMM_POSTGRES_DSN` points at today.
+#                Leave `aurora_cluster_arn` empty; the `rds-data` IAM grant is
+#                then not issued at all.
+#
+#                Before choosing this, read the network caveat in
+#                docs/final-integration-gaps.md. A function outside a VPC has
+#                no stable source address, so there is nothing narrow for the
+#                database security group to allow. Do not resolve that by
+#                opening the database to 0.0.0.0/0.
+persistence_mode = "data_api"
+
+# Required in "data_api" mode. Leave "" in "postgres_dsn" mode.
+aurora_cluster_arn = "arn:aws:rds:ap-south-1:000000000000:cluster:REPLACE-ME"
+
+# Required in BOTH modes, for different contents:
+#   data_api     — the credential the Data API authenticates with
+#   postgres_dsn — the secret holding the DSN itself
+# The connection string is a credential and never becomes a plaintext Lambda
+# environment variable.
+aurora_secret_arn = "arn:aws:secretsmanager:ap-south-1:000000000000:secret:REPLACE-ME"
+
+# Database name inside the existing cluster. Demo creates no database and owns
+# only the `demo_agent` schema inside this one.
+aurora_database = "demo_command_center"
+
+###############################################################################
+# Secrets and external surfaces
+###############################################################################
+
+# Secrets Manager secret holding Demo's provider credentials (Meta, Google,
+# Cashfree, OpenAI, gateway signing). One secret, read by name.
+secret_name = "demo-command-center/REPLACE-ME"
+
+# The NXTutors website gateway. Empty disables identity, quotes and activation
+# rather than guessing an endpoint — `make doctor` reports it as a gap.
+gateway_base_url = ""
+
+# The only non-provider host allowed to appear in an outbound message.
+website_public_base_url = "https://nxtutors.com"
+
+###############################################################################
+# Observability
+###############################################################################
+
+log_level          = "INFO"
+log_retention_days = 30
+
+# "PassThrough" samples only what an upstream already sampled. "Active" traces
+# everything and costs accordingly — see docs/operations/cost-model.md.
+tracing_mode = "PassThrough"
+
+# SNS topics for alarm actions. An empty list means alarms fire into nothing,
+# which is a silent pager. Set this before production.
+alarm_topic_arns = []
+
+###############################################################################
+# Capacity
+#
+# Defaults are in variables.tf and are deliberate: payment holds the smallest
+# pool because it is low volume and high consequence, analytics the largest
+# because it may be starved freely. Override only with a measured reason.
+###############################################################################
+
+# orchestrator_reserved_concurrency = 40
+# scheduling_reserved_concurrency   = 20
+# outbound_reserved_concurrency     = 20   # also the ceiling on the Meta send rate
+# reminder_reserved_concurrency     = 10
+# payment_reserved_concurrency      = 5
+# analytics_reserved_concurrency    = 30

@@ -143,10 +143,24 @@ class TestNoModuleCrossesTheBoundary:
 
 
 class TestTerraformMatchesTheDeclaredZones:
-    """`vpc_config` in Terraform and `TMM_NETWORK_ZONE` must agree.
+    """The stack is fully serverless, and every function still declares a zone.
 
-    They are two independent statements of the same fact, and a deployment where
-    they disagree is exactly the bug this whole file is about.
+    This class used to assert that `TMM_NETWORK_ZONE=vpc` and a `vpc_config`
+    block agreed with each other. That correspondence is gone because the VPC
+    is gone: no function is attached to one, there are no VPC endpoints, no
+    NAT Gateway and no RDS Proxy, and the database is reached over its public
+    endpoint with TLS required.
+
+    `TMM_NETWORK_ZONE` did not lose its meaning, because it was never really
+    about the network. It declares what a function may *talk to*: `vpc` means
+    "database-side — opens a session, makes no LLM call", `internet` means "no
+    database grant at all". The match worker could now technically reach
+    api.openai.com and still must not, since the enrich worker already did that
+    extraction and a second one would pay twice for a worse answer.
+
+    So the invariant here changed shape rather than weakening: instead of
+    checking the two statements agree, it checks that **no function is
+    VPC-attached at all**, and that both roles are still represented.
     """
 
     @staticmethod
@@ -171,23 +185,41 @@ class TestTerraformMatchesTheDeclaredZones:
         for name, body in self.lambda_blocks().items():
             assert "TMM_NETWORK_ZONE" in body, f"{name} does not declare its network zone"
 
-    def test_the_zone_matches_whether_the_function_is_vpc_attached(self) -> None:
+    def test_no_function_is_vpc_attached(self) -> None:
+        """The serverless property, asserted where it can actually be checked.
+
+        One `vpc_config` is all it takes to reintroduce an hourly bill: a
+        VPC-attached Lambda needs either VPC endpoints or a NAT Gateway to
+        reach SQS, Secrets Manager and KMS, and both are billed per hour
+        whether or not a single message is processed.
+        """
         for name, body in self.lambda_blocks().items():
-            attached = "vpc_config" in body
-            declared_vpc = re.search(r'TMM_NETWORK_ZONE\s*=\s*"vpc"', body) is not None
-            assert attached == declared_vpc, (
-                f"{name}: vpc_config={attached} but TMM_NETWORK_ZONE=vpc is "
-                f"{declared_vpc}. One of the two is lying about the network path."
+            assert "vpc_config" not in body, (
+                f"{name} is VPC-attached. That reintroduces VPC endpoints or a "
+                f"NAT Gateway, and with them the only always-on cost this stack "
+                f"has deliberately shed."
             )
 
-    def test_at_least_one_function_lives_on_each_side(self) -> None:
+    def test_both_capability_roles_are_still_represented(self) -> None:
+        """The zone split is a capability boundary, not a network one.
+
+        If every function drifted to one zone the split would have quietly
+        stopped meaning anything — and the reason it exists is that a
+        database-side worker calling an LLM, or an internet-side worker holding
+        a database session, is the failure this file guards.
+        """
         blocks = self.lambda_blocks()
         assert blocks, "no Lambda functions found in Terraform"
         zones = {
-            name: ("vpc" if "vpc_config" in body else "internet") for name, body in blocks.items()
+            name: (
+                "vpc"
+                if re.search(r'TMM_NETWORK_ZONE\s*=\s*"vpc"', body)
+                else "internet"
+            )
+            for name, body in blocks.items()
         }
-        assert "vpc" in zones.values()
-        assert "internet" in zones.values()
+        assert "vpc" in zones.values(), "no database-side function declares itself"
+        assert "internet" in zones.values(), "no internet-side function declares itself"
 
 
 class TestForbiddenInfrastructure:

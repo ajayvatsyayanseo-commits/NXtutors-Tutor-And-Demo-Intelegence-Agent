@@ -1,0 +1,167 @@
+name: demo-command-center-ci
+
+# Path-filtered so a Tutor Intelligence change never triggers this, and this
+# never touches Tutor's own ci.yml.
+on:
+  push:
+    paths:
+      - 'Demo Intelegence Agent/**'
+      - '.github/workflows/demo-command-center-ci.yml'
+  pull_request:
+    paths:
+      - 'Demo Intelegence Agent/**'
+      - '.github/workflows/demo-command-center-ci.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: 'Demo Intelegence Agent'
+
+env:
+  DCC_ENVIRONMENT: local
+  DCC_HASH_PEPPER: ci-test-pepper
+  DCC_WEBSITE_PUBLIC_BASE_URL: https://nxtutors.example
+
+jobs:
+  quality:
+    name: lint · type · test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: install
+        run: uv sync --all-extras
+
+      - name: ruff format
+        run: uv run ruff format --check src tests
+
+      - name: ruff lint
+        run: uv run ruff check src tests
+
+      - name: mypy strict
+        run: uv run mypy src
+
+      - name: unit + coverage gate
+        run: uv run pytest --cov=demo_command_center --cov-report=term-missing
+
+      - name: contract tests
+        run: uv run pytest -m contract -q
+
+      - name: e2e (fake providers, no credentials)
+        run: uv run pytest -m e2e -q
+
+      - name: security tests
+        run: uv run pytest -m security -q
+
+  security:
+    name: bandit · audit · secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so the secret scan can diff against the base commit.
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --all-extras
+
+      - name: bandit
+        run: uv run bandit -r src -ll -c pyproject.toml
+
+      - name: ruff security rules
+        run: uv run ruff check --select S src
+
+      - name: dependency audit
+        run: |
+          uv export --format requirements-txt --all-extras \
+            --no-emit-project --no-hashes -o requirements.audit.txt
+          uv run pip-audit --strict -r requirements.audit.txt
+
+      - name: secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: package · size gate · migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+
+      # The gate that keeps the direct-upload model viable. It FAILS when the
+      # package outgrows the limit rather than falling back to S3, which Demo
+      # is not permitted to use.
+      - name: build lambda package and enforce the size limit
+        run: uv run python scripts/build_lambda.py
+
+      - name: prohibited-resource scan
+        run: uv run python scripts/scan_prohibited.py
+
+      - name: migration validation
+        run: uv run python -m demo_command_center.cli.migrate --dry-run
+
+      - name: doctor
+        run: uv run python -m demo_command_center.cli.doctor
+
+      - name: full lifecycle smoke
+        run: uv run python -m demo_command_center.cli.local_e2e
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-command-center-package
+          path: 'Demo Intelegence Agent/dist/demo_command_center.zip'
+          retention-days: 7
+
+  infrastructure:
+    name: terraform fmt · validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: format check
+        run: terraform fmt -check -recursive
+        working-directory: 'Demo Intelegence Agent/infra/terraform'
+
+      - name: validate
+        # No backend: validation does not need state, and `-backend=false`
+        # keeps CI from needing credentials or a state store at all.
+        run: |
+          terraform init -backend=false
+          terraform validate
+        working-directory: 'Demo Intelegence Agent/infra/terraform'
+
+  load-smoke:
+    name: load smoke profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+
+      # Simulated providers only. No real API is called and nothing is billed.
+      - name: baseline profile
+        run: uv run pytest -m load -q

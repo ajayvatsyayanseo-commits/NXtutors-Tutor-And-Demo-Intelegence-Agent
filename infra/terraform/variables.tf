@@ -25,32 +25,16 @@ variable "secret_name" {
   EOT
 }
 
-variable "vpc_id" {
-  type = string
-}
+variable "db_instance_identifier" {
+  description = <<-EOT
+    The RDS instance this service connects to, for the connection alarm.
 
-variable "private_subnet_ids" {
-  type        = list(string)
-  description = "Private subnets for VPC-attached functions. Must have VPC endpoints; no NAT Gateway is provisioned."
-  validation {
-    condition     = length(var.private_subnet_ids) >= 2
-    error_message = "at least two subnets are required for availability."
-  }
-}
-
-variable "vpc_cidr_blocks" {
-  type        = list(string)
-  description = "CIDRs reachable for AWS service endpoints."
-}
-
-variable "database_cidr_blocks" {
-  type        = list(string)
-  description = "CIDRs of the RDS Proxy endpoints."
-}
-
-variable "rds_proxy_resource_id" {
+    An instance identifier, not a proxy name: there is no RDS Proxy any more.
+    Every Lambda opens its own connection straight to PostgreSQL, so the
+    instance's own DatabaseConnections metric is the only place exhaustion
+    becomes visible.
+  EOT
   type        = string
-  description = "RDS Proxy resource id, for the rds-db:connect IAM policy."
 }
 
 variable "db_username" {
@@ -219,11 +203,6 @@ variable "internal_api_reserved_concurrency" {
     condition     = var.internal_api_reserved_concurrency >= 1 && var.internal_api_reserved_concurrency <= 100
     error_message = "internal_api_reserved_concurrency must be between 1 and 100."
   }
-}
-
-variable "rds_proxy_name" {
-  type        = string
-  description = "RDS Proxy name, for the connection-saturation alarm."
 }
 
 variable "feed_fetch_schedule" {
