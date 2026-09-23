@@ -53,6 +53,18 @@ ALLOWED_EDGES: dict[AgentId, frozenset[AgentId]] = {
     AgentId.DEMO_COMMAND_CENTER: frozenset(
         {AgentId.CHITRAGUPTA, AgentId.WEBSITE, AgentId.NOTIFICATION, AgentId.HUMAN}
     ),
+    # agent.student: analytics over attendance and syllabus coverage.
+    #
+    # It writes memory and records an alert on the website, and that is all. No
+    # edge to NOTIFICATION even though it raises alerts — its contract (§5)
+    # forbids it from messaging a parent, so it hands the fact to the website
+    # and the website decides. Giving it that edge would make the prohibition a
+    # convention instead of a structural fact.
+    #
+    # Nothing yet hands off *to* it: it is driven by its own schedule and, once
+    # a bus exists, by session events. Adding an inbound edge is a routing
+    # decision for whoever owns that source.
+    AgentId.STUDENT: frozenset({AgentId.CHITRAGUPTA, AgentId.WEBSITE}),
     # Infrastructure and terminal nodes originate nothing.
     AgentId.CHITRAGUPTA: frozenset(),
     AgentId.WEBSITE: frozenset(),
