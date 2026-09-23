@@ -42,6 +42,10 @@ class AgentId(StrEnum):
     ONBOARDING = "onboarding_agent"
     TUTOR_MATCH = "tutor_match_meta"
     DEMO_COMMAND_CENTER = "demo_command_center_agent"
+    # Recognised so an envelope from agent.student parses. No entry in
+    # ALLOWED_EDGES below, which is correct: this agent neither hands off to it
+    # nor receives from it, and the allowlist is what grants an edge.
+    STUDENT = "student_agent"
     CHITRAGUPTA = "chitragupta_memory"
     WEBSITE = "nxtutors_website"
     COUNSELOR = "counselor_agent"
