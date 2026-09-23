@@ -30,6 +30,7 @@ from demo_command_center.domain.payments import (
     PaymentEvent,
     PaymentOrder,
     PaymentReconciliationError,
+    ReconciliationFailure,
     SubscriptionActivation,
 )
 from demo_command_center.domain.pricing import ApprovedOffer
@@ -159,7 +160,11 @@ class PaidTransitionCapability:
             )
             return WebhookResult(reason=exc.failure.value)
 
-        assert order is not None  # reconcile() raises ORDER_NOT_FOUND otherwise
+        # reconcile() already raises ORDER_NOT_FOUND for a missing order. This is
+        # a real check rather than an `assert` because `python -O` strips asserts,
+        # and on the money path the guard has to survive that.
+        if order is None:
+            return WebhookResult(reason=ReconciliationFailure.ORDER_NOT_FOUND.value)
         if not event.is_success:
             await self._commerce.save_order(order.model_copy(update={"status": "failed"}))
             return WebhookResult(accepted=True, order=order, reason=event.kind.value)

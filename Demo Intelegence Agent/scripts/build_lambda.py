@@ -70,6 +70,30 @@ def build() -> Path:
     BUILD.mkdir(parents=True)
     DIST.mkdir(exist_ok=True)
 
+    # requirements.lambda.txt is gitignored, so a fresh checkout (CI, the deploy
+    # runner) does not have it. Generate it from the lockfile every time rather
+    # than trusting a stale local copy. No extras: `dev`, `aws` and `postgres`
+    # stay out of the package.
+    print("exporting runtime requirements ...")
+    uv = shutil.which("uv")
+    if uv is None:
+        raise SystemExit("FAIL: `uv` is not on PATH; it is needed to export requirements.")
+    subprocess.run(  # noqa: S603 - fixed argument list, no shell
+        [
+            uv,
+            "export",
+            "--format",
+            "requirements-txt",
+            "--no-dev",
+            "--no-emit-project",
+            "--no-hashes",
+            "-o",
+            str(ROOT / "requirements.lambda.txt"),
+        ],
+        check=True,
+        cwd=ROOT,
+    )
+
     print("installing runtime dependencies ...")
     subprocess.run(  # noqa: S603 - fixed argument list, no shell
         [
